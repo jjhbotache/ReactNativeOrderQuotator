@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import OrderComponent from '../../components/OrderComponent/OrderComponent';
 import MainStyleSheet from './MainStyleSheet';
 import data from '../../mocks/ordersData.json';
 import NewButton from '../../components/OrderComponent/NewButton/NewButton';
-import BottomNavBar from '../../components/BottomNavBar/BottomNavBar';
+import { db } from '../../../App';
 
 export default function Main() {
   const [orders, setOrders] = useState(data);
 
   function onAddPressed() {
-    console.log('Add button pressed');
-    // delete last order
-    setOrders(
-      orders.slice(0, -1)
-    )
+   console.log("add pressed");
   }
+
+  function sync_db_and_state() {
+    db.transaction(tx => {
+      tx.executeSql("SELECT * FROM orders",[], 
+        (_, { rows: { _array } }) => {
+          console.log(_array);
+          setOrders(_array);
+        }
+      )
+    });
+  
+  }
+
+
+  useEffect(() => {
+    sync_db_and_state();
+  }, []);
 
   return (
     <View style={MainStyleSheet.container}>
@@ -25,11 +38,10 @@ export default function Main() {
         <View style={MainStyleSheet.separator} />
         <FlatList
           data={orders}
-          renderItem={({ item }) => <OrderComponent title={item.title} price={item.price} products={item.products} />}
+          renderItem={({ item }) => <OrderComponent title={item.name} price={0} products={0} />}
           keyExtractor={(_,i) => i}
         />
       </View>
-      <BottomNavBar />
       <NewButton onPress={onAddPressed} />
     </View>
   );

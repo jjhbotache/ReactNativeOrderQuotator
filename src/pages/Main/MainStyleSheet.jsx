@@ -1,11 +1,12 @@
 import { StyleSheet } from "react-native";
 import Constants from 'expo-constants';
+import { bgPrimaryColor } from "../../constants/styleConstants";
 
 const MainStyleSheet = StyleSheet.create({
   container: {
     paddingTop: Constants.statusBarHeight,
     flex: 1,
-    backgroundColor: '#630000',
+    backgroundColor: bgPrimaryColor,
   },
   title: {
     fontSize: 24,

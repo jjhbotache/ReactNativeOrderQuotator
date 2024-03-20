@@ -7,10 +7,8 @@ const BottomNavBarStyleSheet = StyleSheet.create({
     backgroundColor: '#333333',
     paddingBottom: 32,
     paddingTop: 10,
-    
-    borderWidth: 2,
-    borderBottomWidth: 0,
-    borderColor: 'white',
+
+    marginTop: -5,
 
     borderTopLeftRadius: 16,  
     borderTopRightRadius: 16,

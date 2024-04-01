@@ -4,10 +4,10 @@ import BottomNavBarStyleSheet from "./BottomNavBarStyleSheet";
 import { useNavigation } from "@react-navigation/native";
 
 export default function BottomNavBar({state, descriptors, navigation}) {
-  console.log("BottomNavBar",);
-  console.log("state", state);
-  console.log("descriptors", descriptors);
-  console.log("navigation", navigation);
+  // console.log("BottomNavBar",);
+  // console.log("state", state);
+  // console.log("descriptors", descriptors);
+  // console.log("navigation", navigation);
 
   const {navigate} = useNavigation()
 

@@ -4,10 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import OrderComponent from '../../components/OrderComponent/OrderComponent';
 import MainStyleSheet from './MainStyleSheet';
 import data from '../../mocks/ordersData.json';
-import NewButton from '../../components/OrderComponent/NewButton/NewButton';
-import { db } from '../../../App';
+import NewButton from '../../components/NewButton/NewButton';
 
-export default function Main() {
+export default function Main({db}) {
   const [orders, setOrders] = useState(data);
 
   function onAddPressed() {

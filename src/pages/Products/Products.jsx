@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { FlatList, Text, View } from "react-native";
-import { db } from "../../../App";
 import Constants from 'expo-constants';
+import NewButton from "../../components/NewButton/NewButton";
+import { useNavigation } from "@react-navigation/native";
 
-export default function Products() {
+export default function Products({db}) {
   const [orders, setOrders] = useState([]);
+
+  const {navigate} = useNavigation();
 
   useEffect(() => {
     console.log("fetching products");
@@ -20,6 +23,10 @@ export default function Products() {
 
   }, []);
 
+  function onCreateProduct() {
+    navigate("NewProduct")
+  }
+
   return(
     <View style={{
       flex:1,
@@ -31,6 +38,7 @@ export default function Products() {
         renderItem={({ item }) => <Text>{item.name}</Text>}
         keyExtractor={(_,i) => i}
       />
+      <NewButton onPress={onCreateProduct} />
     </View>
   )
 };

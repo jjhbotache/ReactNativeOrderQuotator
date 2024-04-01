@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { bgSecondaryColor } from "../../../constants/styleConstants";
+import { bgSecondaryColor } from "../../constants/styleConstants";
 
 const NewButtonStyles = StyleSheet.create({
   addBtn: {

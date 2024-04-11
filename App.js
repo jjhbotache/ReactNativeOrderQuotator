@@ -10,6 +10,8 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Constants from 'expo-constants';
+import ProductsEditor from './src/pages/ProductsEditor/ProductsEditor';
+import NewOrder from './src/pages/NewOrder/NewOrder';
 
 
 const Tabs = createBottomTabNavigator();
@@ -31,25 +33,23 @@ export default function App() {
         unit TEXT,
         price REAL
       );
-      
-      CREATE TABLE IF NOT EXISTS products_orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        FOREIGN KEY(id_product) REFERENCES product(id),
-        amount INTEGER
-      );
-
       CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         name TEXT
       );
-        
-      CREATE TABLE IF NOT EXISTS orders_products_orders (
+      
+      CREATE TABLE IF NOT EXISTS  products_orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        FOREIGN KEY(id_order) REFERENCES order(id)),
-        FOREIGN KEY(id_product) REFERENCES product(id))
+        id_product INTEGER,
+        amount INTEGER,
+        FOREIGN KEY(id_product) REFERENCES products(id)
       );
+
+        
       `
-    );}
+    )},
+    (err) => console.log(err),
+    (result) => console.log("Tables created:", result)
   );
 
   return (
@@ -67,6 +67,12 @@ export default function App() {
           </Tabs.Screen>
           <Tabs.Screen name="NewProduct" options={{headerShown: false}} >
             {props => <NewProduct {...props} db={db} />}
+          </Tabs.Screen>
+          <Tabs.Screen name="ProductsEditor" options={{headerShown: false}} >
+            {props => <ProductsEditor {...props} db={db} />}
+          </Tabs.Screen>
+          <Tabs.Screen name="NewOrder" options={{headerShown: false}} >
+            {props => <NewOrder {...props} db={db} />}
           </Tabs.Screen>
         </Tabs.Navigator>
       </NavigationContainer>

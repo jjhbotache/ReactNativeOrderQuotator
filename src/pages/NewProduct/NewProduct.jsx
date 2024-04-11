@@ -9,7 +9,7 @@ export default function NewProduct({db}) {
   const [price, setPrice] = useState('');
   const {navigate} = useNavigation();
 
-  function onCreateProduct() {
+  function onCreateProduct(e) {
     console.log("creating product");
     db.transaction(tx => {
       tx.executeSql(
@@ -49,7 +49,9 @@ export default function NewProduct({db}) {
         placeholder="Price"
         value={price}
         onChangeText={setPrice}
+        keyboardType='numeric'
       />
+
       <Button style={NewProductStyleSheet.button} title="Create" onPress={onCreateProduct} />
     </View>
   );

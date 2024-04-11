@@ -5,12 +5,14 @@ import OrderComponent from '../../components/OrderComponent/OrderComponent';
 import MainStyleSheet from './MainStyleSheet';
 import data from '../../mocks/ordersData.json';
 import NewButton from '../../components/NewButton/NewButton';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Main({db}) {
   const [orders, setOrders] = useState(data);
-
-  function onAddPressed() {
-   console.log("add pressed");
+  const {navigate} = useNavigation();
+  
+  function onCreateOrder() {
+   navigate('NewOrder');
   }
 
   function sync_db_and_state() {
@@ -41,7 +43,7 @@ export default function Main({db}) {
           keyExtractor={(_,i) => i}
         />
       </View>
-      <NewButton onPress={onAddPressed} />
+      <NewButton onPress={onCreateOrder} />
     </View>
   );
 };

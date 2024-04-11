@@ -17,6 +17,7 @@
     "expo-status-bar": "~1.11.1",
     "react": "18.2.0",
     "react-native": "0.73.5",
+    "react-native-picker-select": "^9.1.3",
     "react-native-sqlite-storage": "^6.0.1",
     "react-router-native": "^6.22.3"
   },

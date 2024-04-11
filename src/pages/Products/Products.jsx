@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Text, TouchableNativeFeedback, View } from "react-native";
 import NewButton from "../../components/NewButton/NewButton";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
+import { productsStyleSheet, productStyleSheet } from "./ProductsStyleSheet";
 
 export default function Products({db}) {
   const [orders, setOrders] = useState([]);
@@ -11,7 +12,6 @@ export default function Products({db}) {
 
   useFocusEffect(
     useCallback(() => {
-    console.log("fetching products");
     db.transaction(tx => {
       tx.executeSql("SELECT * FROM products",[], 
         (_, { rows: { _array } }) => {
@@ -25,19 +25,28 @@ export default function Products({db}) {
       )
     }
     )
-  }));
+  }, []	)
+  );
 
   function onCreateProduct() {
     navigate("NewProduct")
   }
 
   return(
-    <View style={{flex:1,backgroundColor:"grey"}}>
-      <Text>Products</Text>
+    <View style={productsStyleSheet.container}>
+      <Text style={productsStyleSheet.title}>Products</Text>
       <FlatList
         data={orders}
-        renderItem={({ item }) => <Text>{item.name}</Text>}
+        renderItem={({ item }) => (
+          <TouchableNativeFeedback onPress={() => navigate("ProductsEditor", {id: item.id})}>
+          <View style={productStyleSheet.container} >
+            <Text style={productStyleSheet.name}>{item.name}</Text>
+            <Text style={productStyleSheet.name}>$ {item.price}</Text>
+          </View>
+          </TouchableNativeFeedback>
+        )}
         keyExtractor={(_,i) => i}
+        ItemSeparatorComponent={() => <View style={productsStyleSheet.separator} /> }
       />
       <NewButton onPress={onCreateProduct} />
     </View>

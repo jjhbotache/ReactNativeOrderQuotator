@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import OrderComponent from '../../components/OrderComponent/OrderComponent';
 import MainStyleSheet from './MainStyleSheet';
 import data from '../../mocks/ordersData.json';
 import NewButton from '../../components/NewButton/NewButton';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 export default function Main({db}) {
   const [orders, setOrders] = useState(data);
@@ -27,10 +27,12 @@ export default function Main({db}) {
   
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      sync_db_and_state();
+    }, [])
+  );
 
-  useEffect(() => {
-    sync_db_and_state();
-  }, []);
 
   return (
     <View style={MainStyleSheet.container}>

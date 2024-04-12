@@ -6,8 +6,7 @@ const NewOrderStyleSheet = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: bgPrimaryColor,
-
-
+    alignItems: 'center',
   },
   title: {
     fontSize: 20,
@@ -23,6 +22,40 @@ const NewOrderStyleSheet = StyleSheet.create({
       selfAlign: "center",
     },
     padding: 4,
+  },
+  productsQuotationsContainer:{
+    backgroundColor: bgSecondaryColor,
+    padding: 20,
+    borderColor: "white",
+    borderWidth: 1,
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 20,
+  },
+  productQuotation: {
+    backgroundColor: "white",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 20,
+  },
+  btn:{
+    backgroundColor: bgSecondaryColor,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 9999999999,
+    marginBottom: 20,
+    alignItems: "center",
+    maxWidth: "50%",
+  },
+  btnText:{
+    color: "white",
+  },
+  input:{
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 9999999999,
+    marginBottom: 20,
+    width: "100%",
   },
 
 });

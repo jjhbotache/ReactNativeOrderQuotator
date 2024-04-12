@@ -37,20 +37,38 @@ export default function App() {
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
         name TEXT
       );
-      
-      CREATE TABLE IF NOT EXISTS  products_orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        id_product INTEGER,
-        amount INTEGER,
-        FOREIGN KEY(id_product) REFERENCES products(id)
-      );
-
-        
+            
       `
     )},
     (err) => console.log(err),
-    (result) => console.log("Tables created:", result)
-  );
+    (result) => console.log("Tables created")
+  )
+  db.transaction(tx => {
+    tx.executeSql(`
+
+     CREATE TABLE IF NOT EXISTS products_orders (
+       id INTEGER PRIMARY KEY AUTOINCREMENT, 
+       id_product INTEGER,
+       id_order INTEGER,
+       amount INTEGER,
+       FOREIGN KEY(id_product) REFERENCES products(id),
+       FOREIGN KEY(id_order) REFERENCES orders(id)
+     );
+    `,[],
+    (_, { rows }) => {
+      console.log(" Tables created")
+    },
+    (_, error) => {
+      console.log("Error creating tables", error)
+    }
+  )
+  })
+  // show tables
+  db.transaction(tx => {
+    tx.executeSql("SELECT name FROM sqlite_master WHERE type='table';", [], (_, { rows }) => {
+      console.log("Tables:", rows._array)
+    })
+  })
 
   return (
     <View style={{flex:1,marginTop: Constants.statusBarHeight}}>

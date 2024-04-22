@@ -12,6 +12,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Constants from 'expo-constants';
 import ProductsEditor from './src/pages/ProductsEditor/ProductsEditor';
 import NewOrder from './src/pages/NewOrder/NewOrder';
+import OrderEditor from './src/pages/OrderEditor/OrderEditor';
 
 
 const Tabs = createBottomTabNavigator();
@@ -51,8 +52,8 @@ export default function App() {
        id_product INTEGER,
        id_order INTEGER,
        amount INTEGER,
-       FOREIGN KEY(id_product) REFERENCES products(id),
-       FOREIGN KEY(id_order) REFERENCES orders(id)
+       FOREIGN KEY(id_product) REFERENCES products(id) ON DELETE CASCADE,
+       FOREIGN KEY(id_order) REFERENCES orders(id) ON DELETE CASCADE
      );
     `,[],
     (_, { rows }) => {
@@ -63,12 +64,30 @@ export default function App() {
     }
   )
   })
-  // show tables
+  // for all the tables, print the name and it's rows
   db.transaction(tx => {
-    tx.executeSql("SELECT name FROM sqlite_master WHERE type='table';", [], (_, { rows }) => {
-      console.log("Tables:", rows._array)
-    })
+    tx.executeSql("SELECT name FROM sqlite_master WHERE type='table';", [],
+    (_, { rows }) => {
+      for (let i = 0; i < rows.length; i++) {
+        const table = rows.item(i).name;
+        tx.executeSql(`SELECT * FROM ${table};`, [],
+        (_, { rows }) => {
+          console.log(`Table ${table}`, rows._array);
+        },
+        (_, error) => {
+          console.log(`Error loading table ${table}`, error);
+        }
+        )
+      }
+    },
+    (_, error) => {
+      console.log("Error loading tables", error);
+    }
+    )
   })
+  console.log("-------------------------------------------------------------------");
+
+  
 
   return (
     <View style={{flex:1,marginTop: Constants.statusBarHeight}}>
@@ -91,6 +110,9 @@ export default function App() {
           </Tabs.Screen>
           <Tabs.Screen name="NewOrder" options={{headerShown: false}} >
             {props => <NewOrder {...props} db={db} />}
+          </Tabs.Screen>
+          <Tabs.Screen name="OrderEditor" options={{headerShown: false}} >
+            {props => <OrderEditor {...props} db={db} />}
           </Tabs.Screen>
         </Tabs.Navigator>
       </NavigationContainer>

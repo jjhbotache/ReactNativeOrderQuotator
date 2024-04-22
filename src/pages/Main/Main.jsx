@@ -6,6 +6,7 @@ import MainStyleSheet from './MainStyleSheet';
 import data from '../../mocks/ordersData.json';
 import NewButton from '../../components/NewButton/NewButton';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import Divider from '../../components/Divider/Divider';
 
 export default function Main({db}) {
   const [orders, setOrders] = useState(data);
@@ -19,7 +20,6 @@ export default function Main({db}) {
     db.transaction(tx => {
       tx.executeSql("SELECT * FROM orders",[], 
         (_, { rows: { _array } }) => {
-          console.log(_array);
           setOrders(_array);
         }
       )
@@ -32,19 +32,35 @@ export default function Main({db}) {
       sync_db_and_state();
     }, [])
   );
+  function onDeleteOrder(order) {
+    db.transaction(tx => {
+      tx.executeSql("DELETE FROM orders WHERE id = ?",[order.id], 
+        (_, { rows: { _array } }) => {
+          console.log(_array);
+          sync_db_and_state();
+        }
+      )
+    });
+  }
+
+  function onEditOrder(order) {
+    navigate('OrderEditor', {order});
+    // console.log("Edit order", order);
+  }
 
 
   return (
     <View style={MainStyleSheet.container}>
       <View style={MainStyleSheet.infoContainer}>
         <Text style={MainStyleSheet.title}>Orders</Text>
-        <View style={MainStyleSheet.separator} />
+        <Divider />
         <FlatList
           data={orders}
-          renderItem={({ item }) => <OrderComponent title={item.name} price={0} products={0} />}
+          renderItem={({ item:order }) => <OrderComponent order={order} onDelete={onDeleteOrder} onEdit={onEditOrder} />}
           keyExtractor={(_,i) => i}
         />
       </View>
+      <Divider />
       <NewButton onPress={onCreateOrder} />
     </View>
   );

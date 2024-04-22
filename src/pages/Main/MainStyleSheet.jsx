@@ -9,7 +9,7 @@ const MainStyleSheet = StyleSheet.create({
     backgroundColor: bgPrimaryColor,
   },
   title: {
-    fontSize: 24,
+    fontSize: 60,
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 8,

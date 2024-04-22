@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   orderContainer: {
-    backgroundColor: '#333333',
+    backgroundColor: '#222',
     padding: 16,
     marginBottom: 8,
     borderRadius: 8,
@@ -16,11 +16,16 @@ const styles = StyleSheet.create({
   orderDetails: {
     color: '#aaaaaa',
   },
-
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  iconContainer: {
+    width: 64,
+    minWidth: 64,
+    height: 64,
+    minHeight: 64,
+    backgroundColor: '#333',
   },
+  icon: {
+    fontSize: 24,
+  }
 });
 
 export default styles;

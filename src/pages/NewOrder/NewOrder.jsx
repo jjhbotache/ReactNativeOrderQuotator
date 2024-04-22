@@ -158,13 +158,14 @@ export default function NewOrder({ db }) {
   }
 
   function onSaveOrder(){
+    console.log("*****************************");
     console.log(orderInfo);
     db.transaction(tx => {
-      tx.executeSql("INSERT INTO orders (name) VALUES (?)", [orderInfo.name], (_, { insertId }) => {
+      tx.executeSql("INSERT INTO orders (name) VALUES (?)", [orderInfo.name], (_, { orderId }) => {
         orderInfo.orderQuotations.forEach(productQuotation => {
-          tx.executeSql("INSERT INTO products_orders (id_product, id_order, amount) VALUES (?, ?, ?)", [productQuotation.productId, insertId, productQuotation.amount],
+          tx.executeSql("INSERT INTO products_orders (id_product, id_order, amount) VALUES (?, ?, ?)", [productQuotation.productId, orderId, productQuotation.amount],
           (_, { insertId }) => {
-            console.log("Product order inserted", insertId);
+            console.log("Product_order inserted in ", orderId, " ", productQuotation);
           },
           (_, error) => {
             console.log("Error inserting product order", error);
@@ -172,10 +173,10 @@ export default function NewOrder({ db }) {
           );
 
         });
-        navigation.goBack();
+        
       });
     });
-    
+    navigation.goBack();
   }
   return (
     <View style={NewOrderStyleSheet.container}>

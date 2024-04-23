@@ -161,11 +161,11 @@ export default function NewOrder({ db }) {
     console.log("*****************************");
     console.log(orderInfo);
     db.transaction(tx => {
-      tx.executeSql("INSERT INTO orders (name) VALUES (?)", [orderInfo.name], (_, { orderId }) => {
+      tx.executeSql("INSERT INTO orders (name) VALUES (?)", [orderInfo.name], (_, { insertId:createdOrderId }) => {
         orderInfo.orderQuotations.forEach(productQuotation => {
-          tx.executeSql("INSERT INTO products_orders (id_product, id_order, amount) VALUES (?, ?, ?)", [productQuotation.productId, orderId, productQuotation.amount],
+          tx.executeSql("INSERT INTO products_orders (id_product, id_order, amount) VALUES (?, ?, ?)", [productQuotation.productId, createdOrderId, productQuotation.amount],
           (_, { insertId }) => {
-            console.log("Product_order inserted in ", orderId, " ", productQuotation);
+            console.log("Product_order inserted in ", createdOrderId, "order ", productQuotation);
           },
           (_, error) => {
             console.log("Error inserting product order", error);

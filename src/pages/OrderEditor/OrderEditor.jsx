@@ -14,13 +14,13 @@ export default function OrderEditor({db,route}) {
   const [order, setOrder] = useState(orderFromRoute);
   const [productsOrders, setProductsOrders] = useState(undefined);
   const [products, setProducts] = useState([]);
-  const firstProductsOrders = []
 
   // from the paramas, get the order
 
 
   useFocusEffect(useCallback(()=>{
     console.log("OrderEditor focused", orderFromRoute);
+    console.log("OrderEditor focused order", order);
     db.transaction(tx => {
       tx.executeSql(
         `SELECT * FROM products_orders WHERE id_order = ${orderFromRoute.id};`,
@@ -52,6 +52,9 @@ export default function OrderEditor({db,route}) {
   },[orderFromRoute.id]))
 
 
+  useEffect(()=>{
+    setOrder(orderFromRoute);
+  },[orderFromRoute])
   return(
     <View style={OrderEditorStyleSheet.container}>
       <TextInput style={OrderEditorStyleSheet.input} value={order.name} onChangeText={text=>setOrder({...order, name: text})}/>
@@ -59,18 +62,20 @@ export default function OrderEditor({db,route}) {
       <View style={OrderEditorStyleSheet.productsQuotationsContainer}>
         <FlatList
           data={productsOrders}
-          renderItem={({item}) => (<>
+          renderItem={({item}) => {
+            const product = products.find(p=>p.id==item.id_product);
+            return(<>
             <Row>
               <RNPickerSelect
                 style={OrderEditorStyleSheet.dropdown}
                 onValueChange={id=>console.log(id)}
                 items={products.map(product => ({ label: product.name.toString(), value: product.id }))} 
-                placeholder={{ label: products.find(p=>p.id==item.id_product).name, value: item.id_product }}
+                placeholder={{ label: product.name, value: item.id_product }}
                 darkTheme={true}
               />
               <AmountPicker initialAmount={item.amount} onAmountChange={amount=>console.log(amount)}/>
             </Row>
-          </>)}
+          </>)}}
           keyExtractor={item => item.id}
         />
       </View>

@@ -17,6 +17,7 @@ export default function Main({db}) {
   }
 
   function sync_db_and_state() {
+    console.log("sync_db_and_state");
     db.transaction(tx => {
       tx.executeSql("SELECT * FROM orders",[], 
         (_, { rows: { _array } }) => {
@@ -36,9 +37,8 @@ export default function Main({db}) {
     db.transaction(tx => {
       tx.executeSql("DELETE FROM orders WHERE id = ?",[order.id], 
         (_, { rows: { _array } }) => {
-          console.log(_array);
           sync_db_and_state();
-        }
+        },
       )
     });
   }

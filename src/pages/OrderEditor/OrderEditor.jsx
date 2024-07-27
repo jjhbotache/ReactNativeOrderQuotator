@@ -6,79 +6,80 @@ import OrderEditorStyleSheet from "./OrderEditorStyleSheet";
 import Divider from "../../components/Divider/Divider";
 import RNPickerSelect from "react-native-picker-select";
 import AmountPicker from "../../components/AmountPicker/AmountPicker";
+import { useDatabase } from "../../hooks/useDatabase";
 
-export default function OrderEditor({db,route}) {
-  // load the data from the order object
-  const {order: orderFromRoute} = route.params;
+export default function OrderEditor({ route }) {
+  const { order: orderFromRoute } = route.params;
 
   const [order, setOrder] = useState(orderFromRoute);
-  const [productsOrders, setProductsOrders] = useState(undefined);
+  const [productsOrders, setProductsOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  
+  const { getProductsOrders, getProducts } = useDatabase();
 
-  // from the paramas, get the order
+  useFocusEffect(
+    useCallback(() => {
+      console.log("OrderEditor focused", orderFromRoute);
+      console.log("OrderEditor focused order", order);
 
-
-  useFocusEffect(useCallback(()=>{
-    console.log("OrderEditor focused", orderFromRoute);
-    console.log("OrderEditor focused order", order);
-    db.transaction(tx => {
-      tx.executeSql(
-        `SELECT * FROM products_orders WHERE id_order = ${orderFromRoute.id};`,
-        // `SELECT * FROM products_orders;`,
-        [],
-        (_, result) => {
-          // console.log("products_orders loaded", result.rows._array);
-          setProductsOrders(result.rows._array);
-        },
-        (_, error) => {
+      const fetchProductsOrders = async () => {
+        try {
+          const productsOrders = await getProductsOrders(orderFromRoute.id);
+          setProductsOrders(productsOrders);
+        } catch (error) {
           console.log("error loading products_orders", error);
         }
-      )
-    })
-    // get the products
-    db.transaction(tx => {
-      tx.executeSql(
-        `SELECT * FROM products;`,
-        [],
-        (_, result) => {
-          // console.log("products loaded", result.rows._array);
-          setProducts(result.rows._array);
-        },
-        (_, error) => {
+      };
+
+      const fetchProducts = async () => {
+        try {
+          const products = await getProducts();
+          setProducts(products);
+        } catch (error) {
           console.log("error loading products", error);
         }
-      )
-    })
-  },[orderFromRoute.id]))
+      };
 
+      fetchProductsOrders();
+      fetchProducts();
+    }, [orderFromRoute.id])
+  );
 
-  useEffect(()=>{
+  useEffect(() => {
     setOrder(orderFromRoute);
-  },[orderFromRoute])
-  return(
+  }, [orderFromRoute]);
+
+  return (
     <View style={OrderEditorStyleSheet.container}>
-      <TextInput style={OrderEditorStyleSheet.input} value={order.name} onChangeText={text=>setOrder({...order, name: text})}/>
-      <Divider/>  
+      <TextInput
+        style={OrderEditorStyleSheet.input}
+        value={order.name}
+        onChangeText={text => setOrder({ ...order, name: text })}
+      />
+      <Divider />
       <View style={OrderEditorStyleSheet.productsQuotationsContainer}>
         <FlatList
           data={productsOrders}
-          renderItem={({item}) => {
-            const product = products.find(p=>p.id==item.id_product);
-            return(<>
-            <Row>
-              <RNPickerSelect
-                style={OrderEditorStyleSheet.dropdown}
-                onValueChange={id=>console.log(id)}
-                items={products.map(product => ({ label: product.name.toString(), value: product.id }))} 
-                placeholder={{ label: product.name, value: item.id_product }}
-                darkTheme={true}
-              />
-              <AmountPicker initialAmount={item.amount} onAmountChange={amount=>console.log(amount)}/>
-            </Row>
-          </>)}}
-          keyExtractor={item => item.id}
+          renderItem={({ item }) => {
+            const product = products.find(p => p.id == item.id_product);
+            return (
+              <>
+                <Row>
+                  <RNPickerSelect
+                    style={OrderEditorStyleSheet.dropdown}
+                    onValueChange={id => console.log(id)}
+                    items={products.map(product => ({ label: product.name.toString(), value: product.id }))}
+                    placeholder={{ label: product.name, value: item.id_product }}
+                    darkTheme={true}
+                  />
+                  <AmountPicker initialAmount={item.amount} onAmountChange={amount => console.log(amount)} />
+                </Row>
+              </>
+            );
+          }}
+          keyExtractor={item => item.id.toString()}
         />
       </View>
     </View>
-  )
-};
+  );
+}

@@ -1,62 +1,64 @@
-import { Button, Modal, Text, TextInput, TouchableNativeFeedback, View } from "react-native";
-import NewOrderStyleSheet, { ProductQuotationModalStyles } from "./NewOrderStyleSheet";
-import RNPickerSelect from "react-native-picker-select";
-import { useCallback, useState } from "react";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import Divider from "../../components/Divider/Divider";
-import Row from "../../components/Row/Row";
-import AmountPicker from "../../components/AmountPicker/AmountPicker";
-import addDots from "../../helpers/addDots";
+import React, { useCallback, useState } from 'react';
+import { Button, Modal, Text, TextInput, TouchableNativeFeedback, View } from 'react-native';
+import NewOrderStyleSheet, { ProductQuotationModalStyles } from './NewOrderStyleSheet';
+import RNPickerSelect from 'react-native-picker-select';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import Divider from '../../components/Divider/Divider';
+import Row from '../../components/Row/Row';
+import AmountPicker from '../../components/AmountPicker/AmountPicker';
+import addDots from '../../helpers/addDots';
 import { Ionicons } from '@expo/vector-icons';
+import { useDatabase } from '../../hooks/useDatabase';
 
-export default function NewOrder({ db }) {
+export default function NewOrder() {
   const [products, setProducts] = useState([]);
   const [productQuotationModalInfo, setProductQuotationModalInfo] = useState();
-  const [orderInfo, setorderInfo] = useState({
+  const [orderInfo, setOrderInfo] = useState({
     id: undefined,
-    name: "Order",
-    orderQuotations: [
-      
-    ],
+    name: 'Order',
+    orderQuotations: [],
   });
 
+  const { getAllProducts, addOrder, addProductToOrder } = useDatabase();
   const navigation = useNavigation();
-  
+
   useFocusEffect(
     useCallback(() => {
-      // reset the order info
-      setorderInfo({
+      // Reset the order info
+      setOrderInfo({
         id: undefined,
-        name: "Order",
-        orderQuotations: []
+        name: 'Order',
+        orderQuotations: [],
       });
 
-      db.transaction(tx => {
-        tx.executeSql("SELECT * FROM products",[], 
-          (_, { rows: { _array } }) => {
-            console.log(_array);
-            setProducts(_array);
-          }
-        )
-      });
+      const fetchProducts = async () => {
+        try {
+          const products = await getAllProducts();
+          setProducts(products);
+        } catch (error) {
+          console.log('Error fetching products', error);
+        }
+      };
+
+      fetchProducts();
     }, [])
   );
 
-
-  const ProductQuotationModal = <Modal
-    animationType="fade"
-    visible={!!productQuotationModalInfo}
-    onRequestClose={() => setProductQuotationModalInfo(undefined)}
-    transparent={true}
+  const ProductQuotationModal = (
+    <Modal
+      animationType="fade"
+      visible={!!productQuotationModalInfo}
+      onRequestClose={() => setProductQuotationModalInfo(undefined)}
+      transparent={true}
     >
       <View style={ProductQuotationModalStyles.container}>
-        <Text style={ProductQuotationModalStyles.title} >Add a product</Text>
+        <Text style={ProductQuotationModalStyles.title}>Add a product</Text>
         <Divider />
 
         <RNPickerSelect
           style={NewOrderStyleSheet.dropdown}
           onValueChange={(id) => {
-            const product = products.find(product => product.id === id);
+            const product = products.find((product) => product.id === id);
             setProductQuotationModalInfo({
               ...productQuotationModalInfo,
               productId: id,
@@ -65,40 +67,38 @@ export default function NewOrder({ db }) {
                 price: product.price,
               },
               total: product.price * productQuotationModalInfo.quantity,
-            });            
+            });
           }}
-          items={products.map(product => ({ label: product.name.toString(), value: product.id }))} 
-          placeholder={{ label: "Select a product", value: null }}
+          items={products.map((product) => ({ label: product.name.toString(), value: product.id }))}
+          placeholder={{ label: 'Select a product', value: null }}
           darkTheme={true}
         />
 
-        {
-          productQuotationModalInfo && <>
-          {Object.keys(productQuotationModalInfo.info).map(info=>(
+        {productQuotationModalInfo && (
+          <>
+            {Object.keys(productQuotationModalInfo.info).map((info) => (
               <Row key={info} widthPercentage={40} justifyContent="space-between">
                 <Text style={ProductQuotationModalStyles.description}>{info}: </Text>
-                 <Text style={ProductQuotationModalStyles.value}>{productQuotationModalInfo.info[info]}</Text>
+                <Text style={ProductQuotationModalStyles.value}>{productQuotationModalInfo.info[info]}</Text>
               </Row>
-            )
-          )}
-          <AmountPicker minAmount={1} initialAmount={productQuotationModalInfo.quantity} onAmountChange={(quantity) => {
-            setProductQuotationModalInfo({
-                ...productQuotationModalInfo,
-                quantity: quantity,
-                total: (productQuotationModalInfo?.info.price || 0) * quantity
-            })
-            }} />
+            ))}
+            <AmountPicker
+              minAmount={1}
+              initialAmount={productQuotationModalInfo.quantity}
+              onAmountChange={(quantity) => {
+                setProductQuotationModalInfo({
+                  ...productQuotationModalInfo,
+                  quantity: quantity,
+                  total: (productQuotationModalInfo?.info.price || 0) * quantity,
+                });
+              }}
+            />
             <Divider />
             <Text style={ProductQuotationModalStyles.description}>Total: </Text>
             <Text style={ProductQuotationModalStyles.total}>{addDots(productQuotationModalInfo.total)}</Text>
           </>
-        }
-        
+        )}
 
-        
-
-
-        
         <Divider />
 
         <Row>
@@ -107,111 +107,100 @@ export default function NewOrder({ db }) {
               <Text style={ProductQuotationModalStyles.btnText}>Add product</Text>
             </View>
           </TouchableNativeFeedback>
-          <TouchableNativeFeedback onPress={() => {
-            setProductQuotationModalInfo(undefined);
-          }}>
+          <TouchableNativeFeedback onPress={() => setProductQuotationModalInfo(undefined)}>
             <View style={ProductQuotationModalStyles.btn}>
               <Text style={ProductQuotationModalStyles.btnText}>Cancel</Text>
             </View>
           </TouchableNativeFeedback>
         </Row>
-
       </View>
-  </Modal>
+    </Modal>
+  );
 
-  function onAddProductQuotation (){
-    if(!productQuotationModalInfo){
+  function onAddProductQuotation() {
+    if (!productQuotationModalInfo) {
       setProductQuotationModalInfo({
         productId: undefined,
         orderId: undefined,
-        info:{
-          unit: "-",
+        info: {
+          unit: '-',
           pricePerUnit: 0,
         },
         quantity: 1,
         total: 0,
       });
-  }else{
-    // if all the fields are filled, create a new product quotation
-    if(
-      productQuotationModalInfo.productId &&
-      productQuotationModalInfo.quantity > 0
-    ){
-
-
-      // create a new product quotation by appending the product quotation to the order
-      setorderInfo({
-        ...orderInfo,
-        orderQuotations: [
-          ...orderInfo.orderQuotations,
-          {
-            productId: productQuotationModalInfo.productId,
-            amount: productQuotationModalInfo.quantity,
-          }
-        ]
-      });
-      setProductQuotationModalInfo(undefined);
-      
-    }
-    
-  }
-  }
-
-  function onSaveOrder(){
-    console.log("*****************************");
-    console.log(orderInfo);
-    db.transaction(tx => {
-      tx.executeSql("INSERT INTO orders (name) VALUES (?)", [orderInfo.name], (_, { insertId:createdOrderId }) => {
-        orderInfo.orderQuotations.forEach(productQuotation => {
-          tx.executeSql("INSERT INTO products_orders (id_product, id_order, amount) VALUES (?, ?, ?)", [productQuotation.productId, createdOrderId, productQuotation.amount],
-          (_, { insertId }) => {
-            console.log("Product_order inserted in ", createdOrderId, "order ", productQuotation);
-          },
-          (_, error) => {
-            console.log("Error inserting product order", error);
-          }
-          );
-
+    } else {
+      // if all the fields are filled, create a new product quotation
+      if (productQuotationModalInfo.productId && productQuotationModalInfo.quantity > 0) {
+        // create a new product quotation by appending the product quotation to the order
+        setOrderInfo({
+          ...orderInfo,
+          orderQuotations: [
+            ...orderInfo.orderQuotations,
+            {
+              productId: productQuotationModalInfo.productId,
+              amount: productQuotationModalInfo.quantity,
+            },
+          ],
         });
-        
-      });
-    });
-    navigation.goBack();
+        setProductQuotationModalInfo(undefined);
+      }
+    }
   }
+
+  const onSaveOrder = async () => {
+    try {
+      const createdOrderId = await addOrder(orderInfo.name);
+      for (const productQuotation of orderInfo.orderQuotations) {
+        await addProductToOrder(productQuotation.productId, createdOrderId, productQuotation.amount);
+      }
+      navigation.goBack();
+    } catch (error) {
+      console.log('Error saving order', error);
+    }
+  };
+
   return (
     <View style={NewOrderStyleSheet.container}>
       <TextInput
         style={NewOrderStyleSheet.input}
         value={orderInfo.name}
-        onChangeText={(text) => setorderInfo({ ...orderInfo, name: text })}
+        onChangeText={(text) => setOrderInfo({ ...orderInfo, name: text })}
       />
       {productQuotationModalInfo && ProductQuotationModal}
 
       <View style={NewOrderStyleSheet.productsQuotationsContainer}>
-        {orderInfo.orderQuotations.map((productQuotation,i) => {
-          const product = products.find(product => product.id === productQuotation.productId);
+        {orderInfo.orderQuotations.map((productQuotation, i) => {
+          const product = products.find((product) => product.id === productQuotation.productId);
           return (
             <View key={i} style={NewOrderStyleSheet.productQuotation}>
               <Row justifyContent="space-between">
                 <Text>{product.name}</Text>
                 <View>
-                  <Text>{productQuotation.amount} {product.unit}</Text>
-                  <Ionicons name="trash" size={24} color="red" onPress={() => {
-                    setorderInfo({
-                      ...orderInfo,
-                      orderQuotations: orderInfo.orderQuotations.filter((_,index) => index !== i)
-                    });
-                  }} />
+                  <Text>
+                    {productQuotation.amount} {product.unit}
+                  </Text>
+                  <Ionicons
+                    name="trash"
+                    size={24}
+                    color="red"
+                    onPress={() => {
+                      setOrderInfo({
+                        ...orderInfo,
+                        orderQuotations: orderInfo.orderQuotations.filter((_, index) => index !== i),
+                      });
+                    }}
+                  />
                 </View>
               </Row>
               <Text>{addDots(product.price * productQuotation.amount)}</Text>
             </View>
           );
-        })} 
+        })}
       </View>
-      
-      <Divider/>
-      
+
+      <Divider />
+
       <TouchableNativeFeedback onPress={onAddProductQuotation}>
         <View style={NewOrderStyleSheet.btn}>
           <Text style={NewOrderStyleSheet.btnText}>+</Text>
@@ -225,12 +214,10 @@ export default function NewOrder({ db }) {
         </TouchableNativeFeedback>
         <TouchableNativeFeedback onPress={() => navigation.goBack()}>
           <View style={NewOrderStyleSheet.btn}>
-            <Text style={NewOrderStyleSheet.btnText}>cancel</Text>
+            <Text style={NewOrderStyleSheet.btnText}>Cancel</Text>
           </View>
         </TouchableNativeFeedback>
       </Row>
-
-      
     </View>
   );
 }

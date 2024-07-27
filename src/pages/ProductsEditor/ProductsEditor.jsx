@@ -1,72 +1,57 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Text, TextInput, TouchableHighlight, TouchableNativeFeedback, View } from "react-native";
-import ProductsEditorStyleSheet from "./ProductsEditorStyleSheet";
-import { useNavigation } from "@react-navigation/native";
+import { Button, Text, TextInput, TouchableHighlight, View } from 'react-native';
+import ProductsEditorStyleSheet from './ProductsEditorStyleSheet';
+import { useNavigation } from '@react-navigation/native';
+import { useDatabase } from '../../hooks/useDatabase';
 
-export default function ProductsEditor({db,route}) {
+export default function ProductsEditor({ route }) {
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('');
   const [price, setPrice] = useState('');
-  const {navigate} = useNavigation();
+  const { navigate } = useNavigation();
+  const { id: idProductToEdit } = route.params;
+  const { getProductById, updateProduct, deleteProduct } = useDatabase();
 
-  const {id: idProductToEdit} = route.params;	
-  console.log("id", idProductToEdit);
-  
   useEffect(() => {
-    // get and set product data
-    db.transaction(tx => {
-      tx.executeSql(
-        `SELECT * FROM products WHERE id = ${idProductToEdit};`,
-        [],
-        (_, { rows: { _array } }) => {
-          console.log("product to edit", _array);
-          const [product] = _array;
+    const fetchProduct = async () => {
+      try {
+        const product = await getProductById(idProductToEdit);
+        if (product) {
           setName(product.name);
           setUnit(product.unit);
-          setPrice(product.price);
-        },
-        (_, error) => {
-          console.log("error fetching product to edit", error);
+          setPrice(product.price.toString());
         }
-      )
-    });
-    
-  }, []);
+      } catch (error) {
+        console.log('error fetching product to edit', error);
+      }
+    };
 
-  function onSaveProduct() {
-    db.transaction(tx => {
-      tx.executeSql(
-        `UPDATE products SET name = '${name}', unit = '${unit}', price = ${price} WHERE id = ${idProductToEdit};`,
-        [],
-        () => {
-          console.log("product updated");
-          navigate("Products");
-        },
-        (_, error) => {
-          console.log("error updating product", error);
-        }
-      )
-    });
-  }
-  function onDeleteProduct() {
-    db.transaction(tx => {
-      tx.executeSql(
-        `DELETE FROM products WHERE id = ${idProductToEdit};`,
-        [],
-        () => {
-          console.log("product deleted");
-          navigate("Products");
-        },
-        (_, error) => {
-          console.log("error deleting product", error);
-        }
-      )
-    });
-  } 
+    fetchProduct();
+  }, [idProductToEdit]);
+
+  const onSaveProduct = async () => {
+    try {
+      await updateProduct(idProductToEdit, name, unit, parseFloat(price));
+      console.log('product updated');
+      navigate('Products');
+    } catch (error) {
+      console.log('error updating product', error);
+    }
+  };
+
+  const onDeleteProduct = async () => {
+    try {
+      await deleteProduct(idProductToEdit);
+      console.log('product deleted');
+      navigate('Products');
+    } catch (error) {
+      console.log('error deleting product', error);
+    }
+  };
 
   return (
     <View style={ProductsEditorStyleSheet.container}>
-      <Text style={ProductsEditorStyleSheet.title}>New Product</Text>
+      <Text style={ProductsEditorStyleSheet.title}>Edit Product</Text>
       <TextInput
         style={ProductsEditorStyleSheet.input}
         placeholder="Name"
@@ -82,23 +67,21 @@ export default function ProductsEditor({db,route}) {
       <TextInput
         style={ProductsEditorStyleSheet.input}
         placeholder="Price"
-        value={price.toString()}
+        value={price}
         onChangeText={setPrice}
-        keyboardType='numeric'
+        keyboardType="numeric"
       />
       <View style={ProductsEditorStyleSheet.btnsContainer}>
-        <TouchableHighlight style={ProductsEditorStyleSheet.button()} title="Save" onPress={onSaveProduct} >
-          <Text style={ProductsEditorStyleSheet.btnText} >Save</Text>
+        <TouchableHighlight style={ProductsEditorStyleSheet.button()} onPress={onSaveProduct}>
+          <Text style={ProductsEditorStyleSheet.btnText}>Save</Text>
         </TouchableHighlight>
-        <TouchableHighlight style={ProductsEditorStyleSheet.button()} title="Cancel" onPress={() => navigate("Products")} >
-          <Text style={ProductsEditorStyleSheet.btnText} >Cancel</Text>
+        <TouchableHighlight style={ProductsEditorStyleSheet.button()} onPress={() => navigate('Products')}>
+          <Text style={ProductsEditorStyleSheet.btnText}>Cancel</Text>
         </TouchableHighlight>
       </View>
-      <TouchableHighlight style={ProductsEditorStyleSheet.button(true)} title="Delete" onPress={onDeleteProduct} >
-        <Text style={ProductsEditorStyleSheet.btnText} >Delete</Text>
+      <TouchableHighlight style={ProductsEditorStyleSheet.button(true)} onPress={onDeleteProduct}>
+        <Text style={ProductsEditorStyleSheet.btnText}>Delete</Text>
       </TouchableHighlight>
-
-      
     </View>
   );
-};
+}

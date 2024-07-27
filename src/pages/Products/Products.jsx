@@ -4,51 +4,49 @@ import NewButton from "../../components/NewButton/NewButton";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
 import { productsStyleSheet, productStyleSheet } from "./ProductsStyleSheet";
+import { useDatabase } from "../../hooks/useDatabase";
 
-export default function Products({db}) {
-  const [orders, setOrders] = useState([]);
-
-  const {navigate} = useNavigation();
+export default function Products() {
+  const [products, setProducts] = useState([]);
+  const { navigate } = useNavigation();
+  const { getAllProducts } = useDatabase();
 
   useFocusEffect(
     useCallback(() => {
-    db.transaction(tx => {
-      tx.executeSql("SELECT * FROM products",[], 
-        (_, { rows: { _array } }) => {
-          console.log("products");
-          console.log(_array);
-          setOrders(_array);
-        },
-        (_, error) => {
+      const fetchProducts = async () => {
+        try {
+          const fetchedProducts = await getAllProducts();
+          setProducts(fetchedProducts);
+        } catch (error) {
           console.log("error fetching products", error);
         }
-      )
-    }
-    )
-  }, []	)
+      };
+
+      fetchProducts();
+    }, [getAllProducts])
   );
 
-  function onCreateProduct() {
-    navigate("NewProduct")
-  }
+  const onCreateProduct = () => {
+    navigate("NewProduct");
+  };
 
-  return(
+  return (
     <View style={productsStyleSheet.container}>
       <Text style={productsStyleSheet.title}>Products</Text>
       <FlatList
-        data={orders}
+        data={products}
         renderItem={({ item }) => (
-          <TouchableNativeFeedback onPress={() => navigate("ProductsEditor", {id: item.id})}>
-          <View style={productStyleSheet.container} >
-            <Text style={productStyleSheet.name}>{item.name}</Text>
-            <Text style={productStyleSheet.name}>$ {item.price}</Text>
-          </View>
+          <TouchableNativeFeedback onPress={() => navigate("ProductsEditor", { id: item.id })}>
+            <View style={productStyleSheet.container}>
+              <Text style={productStyleSheet.name}>{item.name}</Text>
+              <Text style={productStyleSheet.name}>$ {item.price}</Text>
+            </View>
           </TouchableNativeFeedback>
         )}
-        keyExtractor={(_,i) => i}
-        ItemSeparatorComponent={() => <View style={productsStyleSheet.separator} /> }
+        keyExtractor={(item) => item.id.toString()}
+        ItemSeparatorComponent={() => <View style={productsStyleSheet.separator} />}
       />
       <NewButton onPress={onCreateProduct} />
     </View>
-  )
-};
+  );
+}

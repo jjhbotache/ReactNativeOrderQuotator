@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "orderQuotator",
-    "slug": "orderQuotator",
+    "name": "ordersQuotator",
+    "slug": "ordersQuotator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,9 +11,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": true
     },
@@ -21,10 +18,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.jjhbotache.ordersQuotator"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ab2da828-31d7-496b-869d-e4dcb9cf0e74"
+      }
     }
   }
 }

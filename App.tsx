@@ -8,9 +8,9 @@ import useDatabase from './src/hooks/useDatabase';
 import { styleConstants } from './src/constants';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import Products from './src/pages/Products';
-
-
+import SingleOrderEditor from './src/pages/OrderEditor'; // Import SingleOrderEditor
 
 declare module '@rneui/themed' {
   export interface Colors {
@@ -18,8 +18,15 @@ declare module '@rneui/themed' {
   }
 }
 
+export type RootStackParamList = {
+  MainTabs: undefined;
+  OrderEditor: { orderId: number | null };
+};
+
+const StackNavigator = createStackNavigator<RootStackParamList>();
+const BottomTabsNavigator = createBottomTabNavigator(); 
+
 export default function App() {
-  const { db } = useDatabase();
   const theme = createTheme({ 
     darkColors:{
       primary: styleConstants.colors.primary,
@@ -29,10 +36,9 @@ export default function App() {
       white: styleConstants.colors.text,
     },
     mode:"dark"
+  });
 
-  })
-
-  const BottomTabsNavigator = createBottomTabNavigator(); 
+  
 
   return (
     <ThemeProvider theme={theme}>
@@ -40,42 +46,67 @@ export default function App() {
         <SafeAreaView style={styles.main}>
           <StatusBar style='auto' />
           
-          <BottomTabsNavigator.Navigator
-            initialRouteName='Main'
+          <StackNavigator.Navigator
+            initialRouteName='MainTabs'
             screenOptions={{
-              headerShown:false,
+              headerShown: false,
             }}
-            backBehavior='initialRoute'
-            
           >
-            <BottomTabsNavigator.Screen 
-              name="Main"
-              component={Main}
-              options={{
-                tabBarStyle:styles.tabsStyle,
-                tabBarIcon:()=><Icon name="house"></Icon>,
-                tabBarLabelStyle:styles.tabBarLabelStyle,
-                tabBarActiveTintColor:theme.darkColors.tertiary,
-              }} />
-
-            <BottomTabsNavigator.Screen 
-              name="Products"
-              component={Products}
-              options={{
-                tabBarStyle:styles.tabsStyle,
-                tabBarIcon:()=><Icon name="cube" type='font-awesome'></Icon>,
-                tabBarLabelStyle:styles.tabBarLabelStyle,
-                tabBarActiveTintColor:theme.darkColors.tertiary,
-              }} />
-
-          </BottomTabsNavigator.Navigator>
+            <StackNavigator.Screen name="MainTabs" component={MainTabs} />
+            <StackNavigator.Screen name="OrderEditor" component={SingleOrderEditor}/>
+          </StackNavigator.Navigator>
           
         </SafeAreaView>
       </NavigationContainer>
     </ThemeProvider>
-
   );
 }
+
+const MainTabs = () => {
+  const theme = createTheme({ 
+    darkColors:{
+      primary: styleConstants.colors.primary,
+      secondary: styleConstants.colors.secondary,
+      tertiary: styleConstants.colors.tertiary,
+      background: styleConstants.colors.background,
+      white: styleConstants.colors.text,
+    },
+    mode:"dark"
+  });
+
+
+  return (
+    <BottomTabsNavigator.Navigator
+      initialRouteName='Main'
+      screenOptions={{
+        headerShown: false,
+      }}
+      backBehavior='initialRoute'
+    >
+      <BottomTabsNavigator.Screen 
+        name="Main"
+        component={Main}
+        options={{
+          tabBarStyle: styles.tabsStyle,
+          tabBarIcon: () => <Icon name="house" />,
+          tabBarLabelStyle: styles.tabBarLabelStyle,
+          tabBarActiveTintColor: theme.darkColors.tertiary,
+        }} 
+      />
+
+      <BottomTabsNavigator.Screen 
+        name="Products"
+        component={Products}
+        options={{
+          tabBarStyle: styles.tabsStyle,
+          tabBarIcon: () => <Icon name="cube" type='font-awesome' />,
+          tabBarLabelStyle: styles.tabBarLabelStyle,
+          tabBarActiveTintColor: theme.darkColors.tertiary,
+        }} 
+      />
+    </BottomTabsNavigator.Navigator>
+  );
+};
 
 const styles = StyleSheet.create({
   main: {
@@ -91,5 +122,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   }
-
 });

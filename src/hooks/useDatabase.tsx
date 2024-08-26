@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as SQLite from "expo-sqlite";
+import { Order, Product, ProductOrder } from "../interfaces/databaseInterfaces";
 
 
 export default function useDatabase() {
@@ -47,6 +48,19 @@ export default function useDatabase() {
       await db.runAsync("DELETE FROM orders WHERE id = ?", [order.id]);
     }
   };
+  const manageProduct = async (product: Product, action: string = "create") => {
+    const db = dbRef.current;
+    if (!db) throw new Error("Database not initialized");
+
+    if (action === "create") {
+      await db.runAsync("INSERT INTO products (name, unit, price) VALUES (?, ?, ?)", [product.name, product.unit, product.price]);
+    } else if (action === "update") {
+      await db.runAsync("UPDATE products SET name = ?, unit = ?, price = ? WHERE id = ?", [product.name, product.unit, product.price, product.id]);
+    } else if (action === "delete") {
+      await db.runAsync("DELETE FROM products WHERE id = ?", [product.id]);
+    }
+  };
+  
 
   const getOrders = async () => {
     const db = dbRef.current;
@@ -85,15 +99,10 @@ export default function useDatabase() {
 
   const getProducts = async () => {
     const db = dbRef.current;
-    // wait for the database to be initialized
-
-
-
     if (!db) throw new Error("Database not initialized");
-
     const rows = await db.getAllAsync("SELECT * FROM products");
     return rows as Product[];
   };
 
-  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts };
+  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts, manageProduct };
 }

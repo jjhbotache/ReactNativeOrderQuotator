@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollView, StyleSheet, View, Modal } from "react-native";
 import { Text, useTheme, Button, ListItem, Input } from "@rneui/themed";
 import FloatingBtn from "../components/global/FloatingBtn";
+import useDatabase from "../hooks/useDatabase";
 
 interface Product {
   id?: number;
@@ -12,13 +13,24 @@ interface Product {
 
 export default function Products() {
   const { theme } = useTheme();
+  const { getProducts, manageProduct } = useDatabase();
   const [products, setProducts] = useState<Product[]>([]);
   const [currentProduct, setCurrentProduct] = useState<Product>({ name: "", unit: "", price: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handleAddProduct = () => {
-    setProducts([...products, { ...currentProduct, id: products.length + 1 }]);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    const fetchedProducts = await getProducts();
+    setProducts(fetchedProducts);
+  };
+
+  const handleAddProduct = async () => {
+    await manageProduct(currentProduct, "create");
+    fetchProducts();
     setCurrentProduct({ name: "", unit: "", price: 0 });
     setModalVisible(false);
   };
@@ -29,15 +41,17 @@ export default function Products() {
     setModalVisible(true);
   };
 
-  const handleUpdateProduct = () => {
-    setProducts(products.map(p => (p.id === currentProduct.id ? currentProduct : p)));
+  const handleUpdateProduct = async () => {
+    await manageProduct(currentProduct, "update");
+    fetchProducts();
     setCurrentProduct({ name: "", unit: "", price: 0 });
     setIsEditing(false);
     setModalVisible(false);
   };
 
-  const handleDeleteProduct = (id: number) => {
-    setProducts(products.filter(p => p.id !== id));
+  const handleDeleteProduct = async (id: number) => {
+    await manageProduct({ id } as Product, "delete");
+    fetchProducts();
   };
 
   const openModalForNewProduct = () => {

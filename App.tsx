@@ -25,19 +25,30 @@ export type RootStackParamList = {
 
 const StackNavigator = createStackNavigator<RootStackParamList>();
 const BottomTabsNavigator = createBottomTabNavigator(); 
+const theme = createTheme({ 
+  darkColors:{
+    primary: styleConstants.colors.primary,
+    secondary: styleConstants.colors.secondary,
+    tertiary: styleConstants.colors.tertiary,
+    background: styleConstants.colors.background,
+    white: styleConstants.colors.text,
+  },
+  mode:"dark",
+  components: {
+    Text: {
+      style: {
+        color: styleConstants.colors.text,
+      },
+    },
+    Input: {
+      inputStyle: {
+        color: styleConstants.colors.text,
+      },
+    },
+  }
+});
 
 export default function App() {
-  const theme = createTheme({ 
-    darkColors:{
-      primary: styleConstants.colors.primary,
-      secondary: styleConstants.colors.secondary,
-      tertiary: styleConstants.colors.tertiary,
-      background: styleConstants.colors.background,
-      white: styleConstants.colors.text,
-    },
-    mode:"dark"
-  });
-
   
 
   return (
@@ -62,18 +73,7 @@ export default function App() {
   );
 }
 
-const MainTabs = () => {
-  const theme = createTheme({ 
-    darkColors:{
-      primary: styleConstants.colors.primary,
-      secondary: styleConstants.colors.secondary,
-      tertiary: styleConstants.colors.tertiary,
-      background: styleConstants.colors.background,
-      white: styleConstants.colors.text,
-    },
-    mode:"dark"
-  });
-
+function MainTabs () {
 
   return (
     <BottomTabsNavigator.Navigator

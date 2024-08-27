@@ -60,16 +60,39 @@ export default function useDatabase() {
       await db.runAsync("DELETE FROM products WHERE id = ?", [product.id]);
     }
   };
-  
-
-  const getOrders = async () => {
+  const getOrders = async (id?:number)=> {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
 
-    const rows = await db.getAllAsync("SELECT * FROM orders");
-    return rows as Order[];
-  };
+    
+    if (id) {
+      const rows = await db.getAllAsync(`
+      SELECT orders.*, GROUP_CONCAT(products_orders.id_product) AS productOrders
+      FROM orders
+      LEFT JOIN products_orders ON orders.id = products_orders.id_order
+      WHERE orders.id = ?
+      `, [id]);
 
+      const row = rows[0] as any;
+      try {
+        const order: Order = {
+          id: row.id,
+          name: row.name,
+          productOrders: !!row.productOrders ? row.productOrders.split(",").map(Number): [],
+        };
+        return [order];
+      }
+      catch (error) {
+        console.log(error);
+        return [];
+      }
+      
+    } else {
+      const rows = await db.getAllAsync("SELECT * FROM orders");
+      return rows as Order[];
+    }
+
+  };
   const manageProductOrder = async (productOrder: ProductOrder,action: string = "create") => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
@@ -88,7 +111,6 @@ export default function useDatabase() {
       await db.runAsync("DELETE FROM products_orders WHERE id = ?", [productOrder.id]);
     }
   };
-
   const getProductOrders = async (orderId: number) => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
@@ -96,7 +118,6 @@ export default function useDatabase() {
     const rows = await db.getAllAsync("SELECT * FROM products_orders WHERE id_order = ?", [orderId]);
     return rows as ProductOrder[];
   };
-
   const getProducts = async () => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
@@ -104,5 +125,18 @@ export default function useDatabase() {
     return rows as Product[];
   };
 
-  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts, manageProduct };
+  // clear the database
+  const clearDatabase = async () => {
+    const db = dbRef.current;
+    if (!db) throw new Error("Database not initialized");
+
+    await db.execAsync(`
+      DELETE FROM products_orders;
+      DELETE FROM products;
+      DELETE FROM orders;
+    `);
+  };
+
+
+  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts, manageProduct, clearDatabase };
 }

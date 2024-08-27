@@ -44,37 +44,21 @@ const theme = createTheme({
       inputStyle: {
         color: styleConstants.colors.text,
       },
+      labelStyle: {
+        color: styleConstants.colors.text,
+      },
+      
+    },
+    Button:{
+      buttonStyle:{
+        backgroundColor: styleConstants.colors.primary,
+      },
     },
   }
 });
 
-export default function App() {
-  
-
-  return (
-    <ThemeProvider theme={theme}>
-      <NavigationContainer>
-        <SafeAreaView style={styles.main}>
-          <StatusBar style='auto' />
-          
-          <StackNavigator.Navigator
-            initialRouteName='MainTabs'
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <StackNavigator.Screen name="MainTabs" component={MainTabs} />
-            <StackNavigator.Screen name="OrderEditor" component={SingleOrderEditor}/>
-          </StackNavigator.Navigator>
-          
-        </SafeAreaView>
-      </NavigationContainer>
-    </ThemeProvider>
-  );
-}
-
 function MainTabs () {
-
+  
   return (
     <BottomTabsNavigator.Navigator
       initialRouteName='Main'
@@ -107,6 +91,34 @@ function MainTabs () {
     </BottomTabsNavigator.Navigator>
   );
 };
+
+export default function App() {
+  const { clearDatabase } = useDatabase();
+  // clearDatabase();
+
+  return (
+    <ThemeProvider theme={theme}>
+      <NavigationContainer>
+        <SafeAreaView style={styles.main}>
+          <StatusBar style='auto' />
+          
+          <StackNavigator.Navigator
+            initialRouteName='MainTabs'
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <StackNavigator.Screen name="MainTabs" component={MainTabs} />
+            <StackNavigator.Screen name="OrderEditor" component={SingleOrderEditor}/>
+          </StackNavigator.Navigator>
+          
+        </SafeAreaView>
+      </NavigationContainer>
+    </ThemeProvider>
+  );
+}
+
+
 
 const styles = StyleSheet.create({
   main: {

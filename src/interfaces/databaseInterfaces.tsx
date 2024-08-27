@@ -8,6 +8,7 @@ export interface Product {
 export interface Order {
   id?: number;
   name: string;
+  productOrders?: ProductOrder[];
 }
 
 export interface ProductOrder {

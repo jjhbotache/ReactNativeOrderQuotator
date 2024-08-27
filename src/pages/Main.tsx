@@ -11,7 +11,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 
 export default function Main() {
   const { theme } = useTheme();
-  const { manageOrder, getOrders, getProducts } = useDatabase();
+  const { manageOrder, getOrders, getProducts, clearDatabase } = useDatabase();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -27,8 +27,12 @@ export default function Main() {
 
   const fetchOrders = async () => {
     try {
+      console.log("Fetching orders...");
+      
       const fetchedOrders = await getOrders();
+      console.log("Orders fetched:", fetchedOrders);
       setOrders(fetchedOrders);
+      
     } catch (error) {
       console.log("Error fetching orders:", error);
     }

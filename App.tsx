@@ -32,6 +32,7 @@ const theme = createTheme({
     tertiary: styleConstants.colors.tertiary,
     background: styleConstants.colors.background,
     white: styleConstants.colors.text,
+    
   },
   mode:"dark",
   components: {
@@ -54,6 +55,22 @@ const theme = createTheme({
         backgroundColor: styleConstants.colors.primary,
       },
     },
+    Dialog:{
+      overlayStyle:{
+        backgroundColor: styleConstants.colors.secondary,
+      }
+    },
+    DialogTitle:{
+      titleStyle:{
+        color: styleConstants.colors.text,
+        fontSize: 30,
+      }
+    },
+    DialogButton:{
+      titleStyle:{
+        color: styleConstants.colors.text,
+      }
+    }
   }
 });
 

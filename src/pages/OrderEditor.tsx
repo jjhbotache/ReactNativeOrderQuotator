@@ -5,7 +5,9 @@ import useDatabase from "../hooks/useDatabase";
 import FloatingBtn from '../components/global/FloatingBtn';
 import { Order, ProductOrder, Product } from '../interfaces/databaseInterfaces';
 import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useTheme, Text, Input, Button } from '@rneui/themed';
+import { useTheme, Text, Input, Button, Chip, Dialog} from '@rneui/themed';
+import { toCurrency } from '../helpers/stringHelpers';
+import Dropdown from '../components/global/Dropdown';
 
 const SingleOrderEditor = () => {
   
@@ -13,12 +15,11 @@ const SingleOrderEditor = () => {
     id: null,
     name: "",
   });
+  const [currentProductOrder, setCurrentProductOrder] = useState<null | ProductOrder>(null);
 
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
 
-  const [productOrderModalVisible, setProductOrderModalVisible] = useState(false);
 
   const [productOrders, setProductOrders] = useState<ProductOrder[]>([]);
 
@@ -48,6 +49,7 @@ const SingleOrderEditor = () => {
   };
   const fetchProducts = async () => {
     const fetchedProducts = await getProducts();
+    
     setProducts(fetchedProducts);
   };
 
@@ -56,7 +58,6 @@ const SingleOrderEditor = () => {
       await manageOrder(order, "delete");
       setOrder(null);
       setProductOrders([]);
-      setModalVisible(false);
     }
     navigate('Main'as never);
   };
@@ -87,17 +88,62 @@ const SingleOrderEditor = () => {
           <Input label="Name" value={order?.name} onChangeText={(text) => setOrder({ ...order, name: text })} />
         </View>
         <Text h4>Product Orders</Text>
-        {productOrders.map((po) => (
-          <View key={po.id} style={styles.productOrderContainer}>
-            <Text>Product ID: {po.id_product}</Text>
-            <Text>Amount: {po.amount}</Text>
-          </View>
-        ))}
+        {productOrders.map((po:ProductOrder) => {
+          const product = products.find((p) => p.id === po.id_product);
+          return (
+            <ListItem key={po.id}>
+              <ListItem.Title>{product?.name} </ListItem.Title>
+              <ListItem.Subtitle>{po.amount}/{product.unit}</ListItem.Subtitle>
+              <Chip>{toCurrency(po.amount*product.price)}</Chip>
+            </ListItem>
+          );
+        })}
       </ScrollView>
       <View style={styles.bottomButtonsView}>
-        <Button title="Add Product Order" onPress={() => setProductOrderModalVisible(true)} />
+        <Button title="Add Product Order" onPress={() => setCurrentProductOrder({
+          id: null,
+          id_order: order.id,
+          id_product: null,
+          amount: 0,
+        })} />
         <Button title="Save Order" onPress={saveOrder}  />
       </View>
+      <Dialog
+        isVisible={currentProductOrder !== null}
+        onDismiss={() => setCurrentProductOrder(null)}
+        onBackdropPress={() => setCurrentProductOrder(null)}
+      >
+        <Dialog.Title title={currentProductOrder?.id === null ? "Add Product Order" : "Edit Product Order"}/>
+        <Text>Product</Text>
+        <Dropdown
+          rows={products.map((product) => ({ value: product.id.toString(), label: product.name }))}
+          onChange={(value) => setCurrentProductOrder({ ...currentProductOrder, id_product: parseInt(value) })}
+        />
+        <Input
+          label="Amount"
+          value={currentProductOrder?.amount.toString()}
+          onChangeText={(text) => setCurrentProductOrder({ ...currentProductOrder, amount: parseInt(text)||0 })}
+          keyboardType='numeric'
+          placeholder='0'
+        />
+        <Dialog.Actions>
+          <Dialog.Button title="Cancel" onPress={() => setCurrentProductOrder(null)} />
+            {/* todo */}
+          <Dialog.Button title="Save" onPress={async () => {
+            if (currentProductOrder.id === null &&
+              currentProductOrder.id_product > 0
+            ) {
+              await manageProductOrder(currentProductOrder, "create");
+              setProductOrders([...productOrders, currentProductOrder]);
+            } else {
+              await manageProductOrder(currentProductOrder, "update");
+              setProductOrders(productOrders.map((po) => po.id === currentProductOrder.id ? currentProductOrder : po));
+            }
+            setCurrentProductOrder(null);
+          }} />
+        </Dialog.Actions>
+      </Dialog>
+      
     </View>
   );
 };

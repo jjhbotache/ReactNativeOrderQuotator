@@ -1,78 +1,53 @@
 import React, { useState } from 'react';
-import {
-  Button,
-  Dialog,
-  ListItem,
-} from '@rneui/themed';
-import { View, StyleSheet } from 'react-native';
+import { FlatList } from 'react-native';
+import { Text, ListItem, Dialog, CheckBox, Button } from '@rneui/themed';
 
-interface DropdownProps {
-  options: string[];
-  onChange: (selectedOption: string) => void;
+interface row {
+  value: string;
+  label: string;
 }
 
-const Dropdown: React.FunctionComponent<DropdownProps> = ({ options, onChange }) => {
+interface SelectDropdownProps {
+  rows: row[];
+  onChange: (value: string) => void;
+}
+export default function Dropdown ({ rows, onChange }:SelectDropdownProps) {
   const [visible, setVisible] = useState(false);
-  const [selectedOption, setSelectedOption] = useState('Select an option');
+  const [selectedValue, setSelectedValue] = useState('Select an option');
 
-  const toggleDialog = () => {
+  const toggleOverlay = () => {
     setVisible(!visible);
   };
+  const labels = rows.map((row) => row.label);
+  const values = rows.map((row) => row.value);
 
-  const handleSelect = (option: string) => {
-    setSelectedOption(option);
-    onChange(option);
-    toggleDialog();
+  const selectOption = (index: number) => {
+    const selected = labels[index];
+    setSelectedValue(selected);
+    onChange(values[index]);
+    toggleOverlay();
   };
 
   return (
-    <View style={styles.container}>
-      <Button
-        title={selectedOption}
-        onPress={toggleDialog}
-        buttonStyle={styles.button}
-      />
-      <Dialog
-        isVisible={visible}
-        onBackdropPress={toggleDialog}
-        overlayStyle={styles.dialog}
-      >
-        <Dialog.Title title="Select an Option" titleStyle={{textAlign:"center",fontSize:40}}/>
-        {options.map((option, index) => (
-          <ListItem
-            key={index}
-            containerStyle={{
-              marginHorizontal: -10,
-              borderRadius: 8,
-            }}
-            onPress={() => handleSelect(option)}
-          >
-            <ListItem.Content>
-              <ListItem.Title style={{ fontWeight: '700' }}> {option} </ListItem.Title>
-            </ListItem.Content>
-          </ListItem>
-        ))}
+    <>
+      <Button onPress={toggleOverlay}>{selectedValue}</Button>
+
+      <Dialog isVisible={visible} onBackdropPress={toggleOverlay}>
+        <Dialog.Title title='Select an option' />
+        <FlatList
+          data={labels}
+          renderItem={({ item, index }) => (
+            <CheckBox
+              title={item}
+              checkedIcon="dot-circle-o"
+              uncheckedIcon="circle-o"
+              checked={item === selectedValue}
+              onPress={() => selectOption(index)}
+            />
+          )}
+          keyExtractor={(item) => item}
+        />
       </Dialog>
-    </View>
+    </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  button: {
-    borderRadius: 6,
-    width: 220,
-  },
-  dialog:{
-    flex: .5,
-    gap: 5,
-    justifyContent:"space-evenly",
-    alignContent:"center",  
-  }
-});
-
-export default Dropdown;

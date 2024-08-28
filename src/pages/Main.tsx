@@ -81,20 +81,27 @@ export default function Main() {
             <ListItem.Swipeable
               key={order.id}
               containerStyle={styles.listItem}
-              leftWidth={ScreenWidth / 4}
-              rightWidth={ScreenWidth / 4}
-              leftContent={() => (
+
+              leftWidth={ScreenWidth / 5}
+              rightWidth={ScreenWidth / 5}
+              leftContent={(reset) => (
                 <Button
                   title="Delete"
-                  onPress={() => handleDeleteOrder(order)}
+                  onPress={() => {
+                    handleDeleteOrder(order);
+                    reset(); // Close the swipeable list item after deletion
+                  }}
                   icon={{ name: 'delete', color: 'white' }}
                   buttonStyle={{ minHeight: '100%', backgroundColor: 'red' }}
                 />
               )}
-              rightContent={() => (
+              rightContent={(reset) => (
                 <Button
                   title="Edit"
-                  onPress={() => openModalForEditOrder(order)}
+                  onPress={() => {
+                    openModalForEditOrder(order);
+                    reset(); // Close the swipeable list item after pressing the edit button
+                  }}
                   icon={{ name: 'edit', color: 'white' }}
                   buttonStyle={{ minHeight: '100%', backgroundColor: 'blue' }}
                 />

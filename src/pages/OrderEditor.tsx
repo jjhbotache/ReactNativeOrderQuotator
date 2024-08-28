@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, useWindowDimensions} from 'react-native';
-import {  Overlay, ListItem } from 'react-native-elements';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, ScrollView, StyleSheet} from 'react-native';
+import {  ListItem } from 'react-native-elements';
 import useDatabase from "../hooks/useDatabase";
-import FloatingBtn from '../components/global/FloatingBtn';
 import { Order, ProductOrder, Product } from '../interfaces/databaseInterfaces';
 import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme, Text, Input, Button, Chip, Dialog, Icon} from '@rneui/themed';
@@ -11,28 +10,31 @@ import Dropdown from '../components/global/Dropdown';
 
 const SingleOrderEditor = () => {
   
-  const [order, setOrder] = useState<Order>({
-    id: null,
-    name: "",
-  });
-  const [currentProductOrder, setCurrentProductOrder] = useState<null | ProductOrder>(null);
-
-
-  const [products, setProducts] = useState<Product[]>([]);
-
-
-  const [productOrders, setProductOrders] = useState<ProductOrder[]>([]);
 
   const { getOrders, manageOrder, manageProductOrder, getProducts } = useDatabase();
   const { theme } = useTheme();
   const route = useRoute();
   const { orderId } = route.params as { orderId: number | null };
-  const {navigate} = useNavigation();
 
-  const creatingProductOrder = order?.id === null;
+  const [order, setOrder] = useState<Order>({
+    id: orderId || null,
+    name: "",
+  });
+
+  const [creatingProductOrder, setCreatingProductOrder] = useState<boolean>(orderId === null);
+  const {navigate} = useNavigation();
+  
+  
+  const [currentProductOrder, setCurrentProductOrder] = useState<null | ProductOrder>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productOrders, setProductOrders] = useState<ProductOrder[]>([]);
+
+  
+
   
 
   useFocusEffect(
+    
     useCallback(() => {
       if (!creatingProductOrder) {
         fetchOrder(orderId);
@@ -57,10 +59,6 @@ const SingleOrderEditor = () => {
     
     if (order?.name === "") {
       alert("Please enter a name for the order");
-      return;
-    }
-    if (productOrders.length === 0) {
-      alert("Please add at least one product order");
       return;
     }
     if (creatingProductOrder) {
@@ -102,6 +100,10 @@ const SingleOrderEditor = () => {
     fetchOrder(order.id);
   }
 
+  useEffect(() => {
+    setCreatingProductOrder(order.id === null);
+  }, [order]);
+
 
 
   console.log("productOrders", productOrders);
@@ -140,6 +142,9 @@ const SingleOrderEditor = () => {
         })} />
         <Button title="Save Order" onPress={saveOrder}  />
       </View>
+
+
+
       <Dialog
         isVisible={currentProductOrder !== null}
         onDismiss={() => setCurrentProductOrder(null)}

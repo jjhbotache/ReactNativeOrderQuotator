@@ -8,12 +8,12 @@ import { Order, Product, ProductOrder } from "../interfaces/databaseInterfaces";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from "../../App";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { FlatList } from "react-native-gesture-handler";
 
 export default function Main() {
   const { theme } = useTheme();
   const { manageOrder, getOrders, getProducts, clearDatabase } = useDatabase();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
 
   type OrderEditorProps = StackNavigationProp<RootStackParamList, 'OrderEditor'>;
   const navigation = useNavigation<OrderEditorProps>();
@@ -40,22 +40,13 @@ export default function Main() {
 
   const fetchProducts = async () => {
     try {
-      const fetchedProducts = await getProducts();
-      setProducts(fetchedProducts);
     } catch (error) {
       console.log("Error fetching products:", error);
     }
   };
 
   const createOrder = async () => {
-    try {
-      const newOrder: Order = { name: "" }; // Define the new order
-      await manageOrder(newOrder, "create");
-      fetchOrders();
-      navigation.navigate('OrderEditor', { orderId: null });
-    } catch (error) {
-      console.log("Error saving order:", error);
-    }
+    navigation.navigate('OrderEditor', { orderId: null });
   };
 
   const handleDeleteOrder = async (order: Order) => {
@@ -67,7 +58,7 @@ export default function Main() {
     }
   };
 
-  const openModalForEditOrder = (order: Order) => {
+  const editOrder = (order: Order) => {
     navigation.navigate('OrderEditor', { orderId: order.id });
   };
 
@@ -75,46 +66,47 @@ export default function Main() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text h1>Orders</Text>
 
-      <ScrollView style={styles.ordersContainerView}>
-        <View style={styles.listContainer}>
-          {orders.map((order) => (
-            <ListItem.Swipeable
-              key={order.id}
-              containerStyle={styles.listItem}
-
-              leftWidth={ScreenWidth / 5}
-              rightWidth={ScreenWidth / 5}
-              leftContent={(reset) => (
-                <Button
-                  title="Delete"
-                  onPress={() => {
-                    handleDeleteOrder(order);
-                    reset(); // Close the swipeable list item after deletion
-                  }}
-                  icon={{ name: 'delete', color: 'white' }}
-                  buttonStyle={{ minHeight: '100%', backgroundColor: 'red' }}
-                />
-              )}
-              rightContent={(reset) => (
-                <Button
-                  title="Edit"
-                  onPress={() => {
-                    openModalForEditOrder(order);
-                    reset(); // Close the swipeable list item after pressing the edit button
-                  }}
-                  icon={{ name: 'edit', color: 'white' }}
-                  buttonStyle={{ minHeight: '100%', backgroundColor: 'blue' }}
-                />
-              )}
-            >
-              <ListItem.Content>
-                <ListItem.Title>{order.name}</ListItem.Title>
-              </ListItem.Content>
-              <ListItem.Chevron />
-            </ListItem.Swipeable>
-          ))}
-        </View>
-      </ScrollView>
+      <FlatList
+        contentContainerStyle={styles.listContainer}
+        style={styles.ordersContainerView}
+        data={orders}
+        keyExtractor={(item:Order) => item.id.toString()}
+        renderItem={({ item }:{item:any}) => (
+          <ListItem.Swipeable
+            key={item.id}
+            containerStyle={styles.listItem}
+            leftWidth={ScreenWidth / 5}
+            rightWidth={ScreenWidth / 5}
+            leftContent={(reset) => (
+              <Button
+                title="Delete"
+                onPress={() => {
+                  handleDeleteOrder(item);
+                  reset(); // Close the swipeable list item after deletion
+                }}
+                icon={{ name: 'delete', color: 'white' }}
+                buttonStyle={{ minHeight: '100%', backgroundColor: 'red' }}
+              />
+            )}
+            rightContent={(reset) => (
+              <Button
+                title="Edit"
+                onPress={() => {
+                  editOrder(item);
+                  reset(); // Close the swipeable list item after pressing the edit button
+                }}
+                icon={{ name: 'edit', color: 'white' }}
+                buttonStyle={{ minHeight: '100%', backgroundColor: 'blue' }}
+              />
+            )}
+          >
+            <ListItem.Content>
+              <ListItem.Title>{item.name}</ListItem.Title>
+            </ListItem.Content>
+            <ListItem.Chevron />
+          </ListItem.Swipeable>
+        )}
+      />
 
       <FloatingBtn onPress={createOrder} />
     </View>

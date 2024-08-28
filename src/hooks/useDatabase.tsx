@@ -41,7 +41,12 @@ export default function useDatabase() {
     if (!db) throw new Error("Database not initialized");
 
     if (action === "create") {
-      await db.runAsync("INSERT INTO orders (name) VALUES (?)", [order.name]);
+     const result  = await db.runAsync("INSERT INTO orders (name) VALUES (?)", [order.name]);
+     return {
+      id: result.lastInsertRowId,
+      name: order.name,
+      productOrders: [],
+     };
     } else if (action === "update") {
       await db.runAsync("UPDATE orders SET name = ? WHERE id = ?", [order.name, order.id]);
     } else if (action === "delete") {
@@ -67,25 +72,18 @@ export default function useDatabase() {
     
     if (id) {
       const rows = await db.getAllAsync(`
-      SELECT orders.*, GROUP_CONCAT(products_orders.id_product) AS productOrders
+      SELECT *
       FROM orders
-      LEFT JOIN products_orders ON orders.id = products_orders.id_order
       WHERE orders.id = ?
       `, [id]);
 
       const row = rows[0] as any;
-      try {
-        const order: Order = {
-          id: row.id,
-          name: row.name,
-          productOrders: !!row.productOrders ? row.productOrders.split(",").map(Number): [],
-        };
-        return [order];
-      }
-      catch (error) {
-        console.log(error);
-        return [];
-      }
+      const order: Order = {
+        id: row.id,
+        name: row.name,
+        productOrders: await getProductOrders(row.id),
+      };
+      return [order];
       
     } else {
       const rows = await db.getAllAsync("SELECT * FROM orders");

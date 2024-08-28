@@ -5,7 +5,7 @@ import useDatabase from "../hooks/useDatabase";
 import FloatingBtn from '../components/global/FloatingBtn';
 import { Order, ProductOrder, Product } from '../interfaces/databaseInterfaces';
 import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useTheme, Text, Input, Button, Chip, Dialog} from '@rneui/themed';
+import { useTheme, Text, Input, Button, Chip, Dialog, Icon} from '@rneui/themed';
 import { toCurrency } from '../helpers/stringHelpers';
 import Dropdown from '../components/global/Dropdown';
 
@@ -34,7 +34,7 @@ const SingleOrderEditor = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (creatingProductOrder) {
+      if (!creatingProductOrder) {
         fetchOrder(orderId);
       }
       fetchProducts();
@@ -43,9 +43,8 @@ const SingleOrderEditor = () => {
 
   const fetchOrder = async (id: number) => {
     const [order] = await getOrders(id);
-    console.log(order);
-    
     setOrder(order);
+    setProductOrders(order.productOrders || []);
   };
   const fetchProducts = async () => {
     const fetchedProducts = await getProducts();
@@ -53,19 +52,15 @@ const SingleOrderEditor = () => {
     setProducts(fetchedProducts);
   };
 
-  const handleDeleteOrder = async () => {
-    if (creatingProductOrder !== true) {
-      await manageOrder(order, "delete");
-      setOrder(null);
-      setProductOrders([]);
-    }
-    navigate('Main'as never);
-  };
 
   const saveOrder = async () => {
     
     if (order?.name === "") {
       alert("Please enter a name for the order");
+      return;
+    }
+    if (productOrders.length === 0) {
+      alert("Please add at least one product order");
       return;
     }
     if (creatingProductOrder) {
@@ -76,10 +71,41 @@ const SingleOrderEditor = () => {
     navigate('Main' as never);
   }
 
+  const saveCurrentProductOrder = async () => {
+    if (currentProductOrder?.id_product === null) {
+      alert("Please select a product");
+      return;
+    }
+    if (currentProductOrder?.amount === 0) {
+      alert("Please enter an amount");
+      return;
+    }
+    if (currentProductOrder?.id === null) {
+      await manageProductOrder(currentProductOrder, "create");
+    } 
+    if (order.id === null) {
+      // set the orderPRoduct in the order, and create it
+      const newOrder = await manageOrder(order, "create");
+      await manageProductOrder({ ...currentProductOrder, id_order: newOrder.id  }, "create");
+      setCurrentProductOrder(null);
+      fetchOrder(newOrder.id);      
+      setOrder(newOrder);
+    }else {
+      await manageProductOrder(currentProductOrder, "update");
+    }
+    // update the product orders
+    setCurrentProductOrder(null);
+    fetchOrder(order.id);
+  }
+  const onDeleteProductOrder = async (id: number) => {
+    await manageProductOrder({ id, id_order: order.id, id_product: null, amount: 0 }, "delete");
+    fetchOrder(order.id);
+  }
 
 
 
-
+  console.log("productOrders", productOrders);
+  
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text h1>{!creatingProductOrder ? "Edit Order" : "Create Order"}</Text>
@@ -89,12 +115,18 @@ const SingleOrderEditor = () => {
         </View>
         <Text h4>Product Orders</Text>
         {productOrders.map((po:ProductOrder) => {
-          const product = products.find((p) => p.id === po.id_product);
+          const product:Product = products.find((product) => product.id === po.id_product);
+          if (!product) return null;
           return (
             <ListItem key={po.id}>
-              <ListItem.Title>{product?.name} </ListItem.Title>
-              <ListItem.Subtitle>{po.amount}/{product.unit}</ListItem.Subtitle>
-              <Chip>{toCurrency(po.amount*product.price)}</Chip>
+            <ListItem.Title>{product.name}</ListItem.Title>
+            <ListItem.Subtitle>{po.amount}/{product.unit}</ListItem.Subtitle>
+            <Chip>{toCurrency(po.amount * product.price)}</Chip>
+              <Button
+                icon={<Icon name="delete" color="#ffffff" />}
+                buttonStyle={{ backgroundColor: 'red' }}
+                onPress={() => onDeleteProductOrder(po.id)}
+              />
             </ListItem>
           );
         })}
@@ -129,18 +161,7 @@ const SingleOrderEditor = () => {
         <Dialog.Actions>
           <Dialog.Button title="Cancel" onPress={() => setCurrentProductOrder(null)} />
             {/* todo */}
-          <Dialog.Button title="Save" onPress={async () => {
-            if (currentProductOrder.id === null &&
-              currentProductOrder.id_product > 0
-            ) {
-              await manageProductOrder(currentProductOrder, "create");
-              setProductOrders([...productOrders, currentProductOrder]);
-            } else {
-              await manageProductOrder(currentProductOrder, "update");
-              setProductOrders(productOrders.map((po) => po.id === currentProductOrder.id ? currentProductOrder : po));
-            }
-            setCurrentProductOrder(null);
-          }} />
+          <Dialog.Button title="Save" onPress={saveCurrentProductOrder} />
         </Dialog.Actions>
       </Dialog>
       

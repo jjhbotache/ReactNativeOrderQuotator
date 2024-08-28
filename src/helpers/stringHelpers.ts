@@ -1,3 +1,3 @@
-export const toCurrency = (value: number): string => {
-  return `$${value.toFixed(2)}`;
+export const toCurrency = (value: number, currencySymbol: string = '$'): string => {
+  return `${currencySymbol}${new Intl.NumberFormat('es-CO').format(value)}`;
 }

@@ -1,22 +1,32 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
-import { createTheme, Icon, ThemeProvider } from '@rneui/themed';
+import { Icon, ThemeProvider, useTheme } from '@rneui/themed';
 import Constants from "expo-constants";
 import Main from './src/pages/Main';
 import useDatabase from './src/hooks/useDatabase';
-import { styleConstants } from './src/constants';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Products from './src/pages/Products';
-import SingleOrderEditor from './src/pages/OrderEditor'; // Import SingleOrderEditor
+import SingleOrderEditor from './src/pages/OrderEditor';
+import theme from './src/theme';
 
-declare module '@rneui/themed' {
-  export interface Colors {
-    tertiary: string;
+const styles = StyleSheet.create({
+  main: {
+    flex: 1,
+    paddingTop: Constants.statusBarHeight,
+  },
+  tabsStyle:{
+    backgroundColor:"rgb(0, 38, 90)",
+    minHeight: 65,
+    paddingBottom: 8,
+  },
+  tabBarLabelStyle:{
+    fontSize: 14,
+    fontWeight: 'bold',
   }
-}
+});
 
 export type RootStackParamList = {
   MainTabs: undefined;
@@ -25,63 +35,14 @@ export type RootStackParamList = {
 
 const StackNavigator = createStackNavigator<RootStackParamList>();
 const BottomTabsNavigator = createBottomTabNavigator(); 
-const theme = createTheme({ 
-  darkColors:{
-    primary: styleConstants.colors.primary,
-    secondary: styleConstants.colors.secondary,
-    tertiary: styleConstants.colors.tertiary,
-    background: styleConstants.colors.background,
-    white: styleConstants.colors.text,
-    
-  },
-  mode:"dark",
-  components: {
-    Text: {
-      style: {
-        color: styleConstants.colors.text,
-      },
-    },
-    Input: {
-      inputStyle: {
-        color: styleConstants.colors.text,
-      },
-      labelStyle: {
-        color: styleConstants.colors.text,
-      },
-      
-    },
-    Button:{
-      buttonStyle:{
-        backgroundColor: styleConstants.colors.primary,
-      },
-    },
-    Dialog:{
-      overlayStyle:{
-        backgroundColor: styleConstants.colors.secondary,
-      }
-    },
-    DialogTitle:{
-      titleStyle:{
-        color: styleConstants.colors.text,
-        fontSize: 30,
-      }
-    },
-    DialogButton:{
-      titleStyle:{
-        color: styleConstants.colors.text,
-      }
-    }
-  }
-});
 
 function MainTabs () {
+  const {theme} = useTheme();
   
   return (
     <BottomTabsNavigator.Navigator
       initialRouteName='Main'
-      screenOptions={{
-        headerShown: false,
-      }}
+      screenOptions={{headerShown: false}}
       backBehavior='initialRoute'
     >
       <BottomTabsNavigator.Screen 
@@ -89,9 +50,9 @@ function MainTabs () {
         component={Main}
         options={{
           tabBarStyle: styles.tabsStyle,
-          tabBarIcon: () => <Icon name="house" />,
+          tabBarIcon: () => <Icon name="house" color='white' />,
           tabBarLabelStyle: styles.tabBarLabelStyle,
-          tabBarActiveTintColor: theme.darkColors.tertiary,
+          tabBarActiveTintColor: theme.colors.tertiary,
         }} 
       />
 
@@ -100,9 +61,9 @@ function MainTabs () {
         component={Products}
         options={{
           tabBarStyle: styles.tabsStyle,
-          tabBarIcon: () => <Icon name="cube" type='font-awesome' />,
+          tabBarIcon: () => <Icon name="cube" type='font-awesome' color='white' />,
           tabBarLabelStyle: styles.tabBarLabelStyle,
-          tabBarActiveTintColor: theme.darkColors.tertiary,
+          tabBarActiveTintColor: theme.colors.tertiary,
         }} 
       />
     </BottomTabsNavigator.Navigator>
@@ -137,18 +98,3 @@ export default function App() {
 
 
 
-const styles = StyleSheet.create({
-  main: {
-    flex: 1,
-    paddingTop: Constants.statusBarHeight,
-  },
-  tabsStyle:{
-    backgroundColor:"rgb(0, 38, 90)",
-    minHeight: 65,
-    paddingBottom: 8,
-  },
-  tabBarLabelStyle:{
-    fontSize: 14,
-    fontWeight: 'bold',
-  }
-});

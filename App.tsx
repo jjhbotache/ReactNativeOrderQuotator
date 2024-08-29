@@ -11,6 +11,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Products from './src/pages/Products';
 import SingleOrderEditor from './src/pages/OrderEditor';
 import theme from './src/theme';
+import Settings from './src/pages/Settings';
 
 const styles = StyleSheet.create({
   main: {
@@ -62,6 +63,17 @@ function MainTabs () {
         options={{
           tabBarStyle: styles.tabsStyle,
           tabBarIcon: () => <Icon name="cube" type='font-awesome' color='white' />,
+          tabBarLabelStyle: styles.tabBarLabelStyle,
+          tabBarActiveTintColor: theme.colors.tertiary,
+        }} 
+      />
+
+      <BottomTabsNavigator.Screen 
+        name="Settings"
+        component={Settings}
+        options={{
+          tabBarStyle: styles.tabsStyle,
+          tabBarIcon: () => <Icon name="tools" type='font-awesome-5' color='white' />,
           tabBarLabelStyle: styles.tabBarLabelStyle,
           tabBarActiveTintColor: theme.colors.tertiary,
         }} 

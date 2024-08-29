@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as SQLite from "expo-sqlite";
-import { Order, Product, ProductOrder } from "../interfaces/databaseInterfaces";
-
+import { Order, Product, ProductOrder, Setting } from "../interfaces/databaseInterfaces";
 
 export default function useDatabase() {
   const dbRef = useRef<SQLite.SQLiteDatabase>(SQLite.openDatabaseSync("orders.db"));
@@ -30,6 +29,10 @@ export default function useDatabase() {
           FOREIGN KEY(id_product) REFERENCES products(id) ON DELETE CASCADE,
           FOREIGN KEY(id_order) REFERENCES orders(id) ON DELETE CASCADE
         );
+        CREATE TABLE IF NOT EXISTS settings (
+          setting TEXT PRIMARY KEY,
+          value TEXT
+        );
       `);
     };
 
@@ -53,6 +56,7 @@ export default function useDatabase() {
       await db.runAsync("DELETE FROM orders WHERE id = ?", [order.id]);
     }
   };
+
   const manageProduct = async (product: Product, action: string = "create") => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
@@ -65,11 +69,11 @@ export default function useDatabase() {
       await db.runAsync("DELETE FROM products WHERE id = ?", [product.id]);
     }
   };
-  const getOrders = async (id?:number)=> {
+
+  const getOrders = async (id?: number) => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
 
-    
     if (id) {
       const rows = await db.getAllAsync(`
       SELECT *
@@ -89,9 +93,9 @@ export default function useDatabase() {
       const rows = await db.getAllAsync("SELECT * FROM orders");
       return rows as Order[];
     }
-
   };
-  const manageProductOrder = async (productOrder: ProductOrder,action: string = "create") => {
+
+  const manageProductOrder = async (productOrder: ProductOrder, action: string = "create") => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
 
@@ -109,6 +113,7 @@ export default function useDatabase() {
       await db.runAsync("DELETE FROM products_orders WHERE id = ?", [productOrder.id]);
     }
   };
+
   const getProductOrders = async (orderId: number) => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
@@ -116,11 +121,33 @@ export default function useDatabase() {
     const rows = await db.getAllAsync("SELECT * FROM products_orders WHERE id_order = ?", [orderId]);
     return rows as ProductOrder[];
   };
+
   const getProducts = async () => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
     const rows = await db.getAllAsync("SELECT * FROM products");
     return rows as Product[];
+  };
+
+  const getSettings = async () => {
+    const db = dbRef.current;
+    if (!db) throw new Error("Database not initialized");
+
+    const rows = await db.getAllAsync("SELECT * FROM settings");
+    return rows as Setting[];
+  }
+
+  const manageSetting = async (setting: Setting, action: string = "create") => {
+    const db = dbRef.current;
+    if (!db) throw new Error("Database not initialized");
+
+    if (action === "create") {
+      await db.runAsync("INSERT INTO settings (setting, value) VALUES (?, ?)", [setting.setting, setting.value]);
+    } else if (action === "update") {
+      await db.runAsync("UPDATE settings SET value = ? WHERE setting = ?", [setting.value, setting.setting]);
+    } else if (action === "delete") {
+      await db.runAsync("DELETE FROM settings WHERE setting = ?", [setting.setting]);
+    }
   };
 
   // clear the database
@@ -132,9 +159,9 @@ export default function useDatabase() {
       DELETE FROM products_orders;
       DELETE FROM products;
       DELETE FROM orders;
+      DELETE FROM settings;
     `);
   };
 
-
-  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts, manageProduct, clearDatabase };
+  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts, manageProduct, manageSetting, getSettings, clearDatabase };
 }

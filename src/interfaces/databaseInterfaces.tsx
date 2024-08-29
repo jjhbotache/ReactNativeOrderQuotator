@@ -17,3 +17,8 @@ export interface ProductOrder {
   id_order: number;
   amount: number;
 }
+
+export interface Setting {
+  setting: string;
+  value: string;
+}

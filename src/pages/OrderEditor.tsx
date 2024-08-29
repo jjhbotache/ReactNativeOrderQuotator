@@ -79,7 +79,7 @@ const useStyles = makeStyles((theme, props) => ({
 const SingleOrderEditor = () => {
   
 
-  const { getOrders, manageOrder, manageProductOrder, getProducts } = useDatabase();
+  const { getOrders, manageOrder, manageProductOrder, getProducts, getSettings } = useDatabase();
   const styles = useStyles();
   const route = useRoute();
   const { orderId } = route.params as { orderId: number | null };
@@ -180,7 +180,14 @@ const SingleOrderEditor = () => {
       alert("Please save the order before generating the PDF");
       return;
     }
-    await createPDF(order, products)
+    const settings = await getSettings();
+    const biller = settings.find((setting) => setting.setting === "company")?.value || "Unknown";
+    await createPDF(
+      order,
+      products,
+      order.name,
+      biller
+    )
     setSpeedDialOpen(false);
   }
 

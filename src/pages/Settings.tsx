@@ -4,12 +4,20 @@ import { Text, useTheme, ListItem, Input, makeStyles } from "@rneui/themed";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Settings as SettingsInterface } from "../helpers/createPDF"; // Import the new interface
 import { useFocusEffect } from '@react-navigation/native';
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
-export const getSettingsFromStorage = async (): Promise<SettingsInterface> => {
+export const getSettingsFromStorage = async ()=> {
   try {
-    const jsonValue = await AsyncStorage.getItem('settings');
-    
-    return jsonValue != null ? JSON.parse(jsonValue) : new SettingsInterface();
+    const jsonValue = JSON.parse( await AsyncStorage.getItem('settings'));
+    //  if the jsonValue doesnt have exactly the same keys as the required array, create a new object with the required keys as empty strings
+    const requiredKeys = Object.keys(getListOfSettings());
+    const jsonKeys = Object.keys(jsonValue);
+    const missingKeys = requiredKeys.filter(key => !jsonKeys.includes(key));
+    if(missingKeys.length > 0){
+      return getListOfSettings();
+    }
+
+    return jsonValue != null ? jsonValue : getListOfSettings();
   } catch (e) {
     console.error("Failed to fetch settings from AsyncStorage", e);
     return new SettingsInterface();
@@ -40,6 +48,10 @@ export default function Settings() {
     useCallback(() => {
       const fetchSettings = async () => {
         const fetchedSettings = await getSettingsFromStorage();
+        // filter the settings that are not in the excludedSettings array
+        // const filteredSettings = Object.keys(fetchedSettings).filter(setting => !excludedSettings.includes(setting));
+        console.log(fetchedSettings);
+        
         setSettings(fetchedSettings);
       };
 

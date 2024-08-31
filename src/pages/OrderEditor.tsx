@@ -185,7 +185,7 @@ const SingleOrderEditor = () => {
     setSpeedDialOpen(false);
     setLastSavedOrder(order);
     console.log("order saved");
-    
+    navigation.goBack();
   };
 
   const saveCurrentProductOrder = async () => {
@@ -235,7 +235,7 @@ const SingleOrderEditor = () => {
   const onCreatePDF = async () => {
     
     
-    if (order.productOrders.length < 2) { // the first product order is always empty
+    if (order.productOrders.length < 1) { 
       alert("Please add at least one product order");
       return;
     }

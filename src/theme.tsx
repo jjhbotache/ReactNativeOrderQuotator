@@ -24,8 +24,13 @@ const theme = createTheme({
       },
     },
     Input: {
+      style: {
+        color: styleConstants.colors.text,
+        fontSize: 20, // Adjust the font size to make the inputs smaller
+      },
       inputStyle: {
         color: styleConstants.colors.text,
+        fontSize: 7, // Adjust the font size to make the inputs smaller
       },
       labelStyle: {
         color: styleConstants.colors.text,
@@ -34,7 +39,8 @@ const theme = createTheme({
         backgroundColor:"rgba(255,255,255,0.1)",
         borderRadius: 5,
         marginVertical: 5,
-        paddingTop: 15,
+        paddingTop: 2, // Adjust the padding to make the inputs smaller
+        paddingBottom: 2, // Adjust the padding to make the inputs smaller
       },
     },
     Button:{
@@ -72,7 +78,6 @@ const theme = createTheme({
       },
       
     },
-
   }
 });
 

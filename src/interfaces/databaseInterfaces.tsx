@@ -6,19 +6,17 @@ export interface Product {
 }
 
 export interface Order {
-  id?: number;
+  id: number;
   name: string;
-  productOrders?: ProductOrder[];
+  companyName: string;
+  companyNit: string;
+  productOrders: ProductOrder[];
 }
 
 export interface ProductOrder {
   id: number;
   id_product: number;
   id_order: number;
-  amount: number;
+  amount: number | string ;
 }
 
-export interface Setting {
-  setting: string;
-  value: string;
-}

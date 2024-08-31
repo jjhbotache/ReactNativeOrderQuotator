@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as SQLite from "expo-sqlite";
-import { Order, Product, ProductOrder, Setting } from "../interfaces/databaseInterfaces";
+import { Order, Product, ProductOrder } from "../interfaces/databaseInterfaces";
 
 export default function useDatabase() {
   const dbRef = useRef<SQLite.SQLiteDatabase>(SQLite.openDatabaseSync("orders.db"));
@@ -19,7 +19,9 @@ export default function useDatabase() {
         );
         CREATE TABLE IF NOT EXISTS orders (
           id INTEGER PRIMARY KEY AUTOINCREMENT, 
-          name TEXT
+          name TEXT,
+          companyName TEXT,
+          companyNit TEXT
         );
         CREATE TABLE IF NOT EXISTS products_orders (
           id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -40,20 +42,27 @@ export default function useDatabase() {
   }, []);
 
   const manageOrder = async (order: Order, action: string = "create") => {
-    const db = dbRef.current;
-    if (!db) throw new Error("Database not initialized");
-
-    if (action === "create") {
-     const result  = await db.runAsync("INSERT INTO orders (name) VALUES (?)", [order.name]);
-     return {
-      id: result.lastInsertRowId,
-      name: order.name,
-      productOrders: [],
-     };
-    } else if (action === "update") {
-      await db.runAsync("UPDATE orders SET name = ? WHERE id = ?", [order.name, order.id]);
-    } else if (action === "delete") {
-      await db.runAsync("DELETE FROM orders WHERE id = ?", [order.id]);
+    try {
+      const db = dbRef.current;
+      if (!db) throw new Error("Database not initialized");
+  
+      if (action === "create") {
+       const result  = await db.runAsync("INSERT INTO orders (name, companyName, companyNit) VALUES (?, ?, ?)", [order.name, order.companyName, order.companyNit]);
+       return {
+        id: result.lastInsertRowId,
+        name: order.name,
+        companyName: order.companyName,
+        companyNit: order.companyNit,
+        productOrders: [],
+       };
+      } else if (action === "update") {
+        await db.runAsync("UPDATE orders SET name = ?, companyName = ?, companyNit = ? WHERE id = ?", [order.name, order.companyName, order.companyNit, order.id]);
+      } else if (action === "delete") {
+        await db.runAsync("DELETE FROM orders WHERE id = ?", [order.id]);
+      }   
+    } catch (error) {
+      console.error(error);
+      
     }
   };
 
@@ -85,6 +94,8 @@ export default function useDatabase() {
       const order: Order = {
         id: row.id,
         name: row.name,
+        companyName: row.companyName,
+        companyNit: row.companyNit,
         productOrders: await getProductOrders(row.id),
       };
       return [order];
@@ -96,21 +107,26 @@ export default function useDatabase() {
   };
 
   const manageProductOrder = async (productOrder: ProductOrder, action: string = "create") => {
-    const db = dbRef.current;
-    if (!db) throw new Error("Database not initialized");
-
-    if (action === "create") {
-      await db.runAsync(
-        "INSERT INTO products_orders (id_product, id_order, amount) VALUES (?, ?, ?)",
-        [productOrder.id_product, productOrder.id_order, productOrder.amount]
-      );
-    } else if (action === "update") {
-      await db.runAsync(
-        "UPDATE products_orders SET id_product = ?, amount = ? WHERE id = ?",
-        [productOrder.id_product, productOrder.amount, productOrder.id]
-      );
-    } else if (action === "delete") {
-      await db.runAsync("DELETE FROM products_orders WHERE id = ?", [productOrder.id]);
+    try {
+      
+      const db = dbRef.current;
+      if (!db) throw new Error("Database not initialized");
+  
+      if (action === "create") {
+        await db.runAsync(
+          "INSERT INTO products_orders (id_product, id_order, amount) VALUES (?, ?, ?)",
+          [productOrder.id_product, productOrder.id_order, productOrder.amount]
+        );
+      } else if (action === "update") {
+        await db.runAsync(
+          "UPDATE products_orders SET id_product = ?, amount = ? WHERE id = ?",
+          [productOrder.id_product, productOrder.amount, productOrder.id]
+        );
+      } else if (action === "delete") {
+        await db.runAsync("DELETE FROM products_orders WHERE id = ?", [productOrder.id]);
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -129,39 +145,17 @@ export default function useDatabase() {
     return rows as Product[];
   };
 
-  const getSettings = async () => {
-    const db = dbRef.current;
-    if (!db) throw new Error("Database not initialized");
-
-    const rows = await db.getAllAsync("SELECT * FROM settings");
-    return rows as Setting[];
-  }
-
-  const manageSetting = async (setting: Setting, action: string = "create") => {
-    const db = dbRef.current;
-    if (!db) throw new Error("Database not initialized");
-
-    if (action === "create") {
-      await db.runAsync("INSERT INTO settings (setting, value) VALUES (?, ?)", [setting.setting, setting.value]);
-    } else if (action === "update") {
-      await db.runAsync("UPDATE settings SET value = ? WHERE setting = ?", [setting.value, setting.setting]);
-    } else if (action === "delete") {
-      await db.runAsync("DELETE FROM settings WHERE setting = ?", [setting.setting]);
-    }
-  };
-
-  // clear the database
   const clearDatabase = async () => {
     const db = dbRef.current;
     if (!db) throw new Error("Database not initialized");
 
     await db.execAsync(`
-      DELETE FROM products_orders;
-      DELETE FROM products;
-      DELETE FROM orders;
-      DELETE FROM settings;
+      DROP TABLE IF EXISTS products;
+      DROP TABLE IF EXISTS orders;
+      DROP TABLE IF EXISTS products_orders;
+      DROP TABLE IF EXISTS settings;
     `);
   };
 
-  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts, manageProduct, manageSetting, getSettings, clearDatabase };
+  return { manageOrder, getOrders, manageProductOrder, getProductOrders, getProducts, manageProduct, clearDatabase };
 }

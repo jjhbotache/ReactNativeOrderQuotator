@@ -85,7 +85,7 @@ export default function Settings() {
 
       <ScrollView style={styles.settingsContainerView}>
         <View style={styles.listContainer}>
-          {Object.keys(settings).map((key) => (
+          {Object.keys(settings).filter(setting => !excludedSettings.includes(setting)).map((key) => (
             <ListItem key={key} bottomDivider style= {{padding: 0}} containerStyle = {{padding: 1}}>
               <View style={styles.row}>
                 <ListItem.Content >

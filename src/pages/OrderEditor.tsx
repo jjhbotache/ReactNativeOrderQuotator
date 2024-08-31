@@ -185,7 +185,6 @@ const SingleOrderEditor = () => {
     setSpeedDialOpen(false);
     setLastSavedOrder(order);
     console.log("order saved");
-    navigation.goBack();
   };
 
   const saveCurrentProductOrder = async () => {

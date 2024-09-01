@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { ScrollView,  View, Modal } from "react-native";
 import { Text,  Button, ListItem, Input, makeStyles } from "@rneui/themed";
 import FloatingBtn from "../components/global/FloatingBtn";
 import useDatabase from "../hooks/useDatabase";
 import { toCurrency } from "../helpers/stringHelpers";
+import { languageContext } from "../contexts/languageContext";
+import { texts } from "../constants";
 
 interface Product {
   id?: number;
@@ -59,6 +61,7 @@ export default function Products() {
   const [isEditing, setIsEditing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const styles = useStyles();
+  const {language}= useContext(languageContext);
 
   useEffect(() => {
     fetchProducts();
@@ -108,7 +111,7 @@ export default function Products() {
 
   return (
     <View style={styles.container}>
-      <Text h1>Products</Text>
+      <Text h1 >{texts.products.products[language]}</Text>
 
       <ScrollView style={styles.productsContainerView}>
         <View style={styles.listContainer}>
@@ -118,7 +121,7 @@ export default function Products() {
               containerStyle={styles.listItem}
               leftContent={(reset) => (
                 <Button
-                  title="Delete"
+                  title={texts.delete[language]}
                   onPress={() => {
                     reset();
                     product.id && handleDeleteProduct(product.id)
@@ -129,7 +132,7 @@ export default function Products() {
               )}
               rightContent={(reset) => (
                 <Button
-                  title="Edit"
+                  title={texts.edit[language]}
                   onPress={() => {
                     reset();
                     product.id && handleEditProduct(product)
@@ -156,26 +159,29 @@ export default function Products() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalView}>
-          <Text h4>{isEditing ? "Edit Product" : "Add Product"}</Text>
+          <Text h2 style={{marginBottom:20}}>{isEditing ? texts.products.editProduct[language] : texts.products.addProduct[language]}</Text>
           <Input
-            placeholder="Name"
+            label={texts.products.productName[language]}
+            placeholder="Cortina sheer"
             value={currentProduct.name}
             onChangeText={(text) => setCurrentProduct({ ...currentProduct, name: text })}
           />
           <Input
-            placeholder="Unit"
+            label={texts.products.productUnit[language]}
+            placeholder="m2"
             value={currentProduct.unit}
             onChangeText={(text) => setCurrentProduct({ ...currentProduct, unit: text })}
           />
           <Input
+            label={texts.products.productPrice[language]}
             placeholder="Price"
             value={currentProduct.price.toString()}
             onChangeText={handlePriceChange}
             keyboardType="numeric"
           />
           <View style={styles.row}>
-            <Button  type="outline" title="Cancel" onPress={() => setModalVisible(false)} />
-            <Button  title={isEditing ? "Update" : "create"} onPress={isEditing ? handleUpdateProduct : handleAddProduct} />
+            <Button  type="outline" title={texts.cancel[language]} onPress={() => setModalVisible(false)} />
+            <Button  title={isEditing ? texts.update[language] : texts.create[language]} onPress={isEditing ? handleUpdateProduct : handleAddProduct} />
           </View>
         </View>
       </Modal>

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useContext } from 'react';
 import { View, FlatList, Alert } from 'react-native';
 import useDatabase from "../hooks/useDatabase";
 import { Order, ProductOrder, Product } from '../interfaces/databaseInterfaces';
@@ -8,6 +8,8 @@ import { toCurrency } from '../helpers/stringHelpers';
 import Dropdown from '../components/global/Dropdown';
 import createPDF, { Settings } from '../helpers/createPDF';
 import { getSettingsFromStorage } from './Settings';
+import { languageContext } from '../contexts/languageContext';
+import { texts } from '../constants';
 
 const useStyles = makeStyles((theme, props) => ({
   container: {
@@ -98,6 +100,8 @@ const SingleOrderEditor = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [productOrders, setProductOrders] = useState<ProductOrder[]>([]);
   const [speedDialOpen, setSpeedDialOpen] = useState(false);
+
+  const {language}= useContext(languageContext);
 
   useFocusEffect(
     useCallback(() => {
@@ -284,33 +288,33 @@ const SingleOrderEditor = () => {
   }
   return (
     <View style={styles.container}>
-      <Text h1>{!creatingProductOrder ? "Edit Order" : "Create Order"}</Text>
+      <Text h1>{!creatingProductOrder ? texts.orderEditor.editOrder[language] : texts.orderEditor.addOrder[language]}</Text>
       <View style={styles.row}>
         <Input
           value={order?.name}
           onChangeText={(text) => setOrder({ ...order, name: text })}
-          placeholder="Order Name"
-          label="Order Name"
+          placeholder={texts.orderEditor.orderName[language]}
+          label={texts.orderEditor.orderName[language]}
         />
       </View>
       <View style={styles.row}>
         <Input
           value={order?.companyName}
           onChangeText={(text) => setOrder({ ...order, companyName: text })}
-          placeholder="Company Name"
-          label="Company Name"
+          placeholder={texts.orderEditor.companyName[language]}
+          label={texts.orderEditor.companyName[language]}
         />
       </View>
       <View style={styles.row}>
         <Input
           value={order?.companyNit}
           onChangeText={(text) => setOrder({ ...order, companyNit: text })}
-          placeholder="Company NIT"
-          label="Company NIT"
+          placeholder={texts.orderEditor.companyNIT[language]}
+          label={texts.orderEditor.companyNIT[language]}
         />
       </View>
       <FlatList
-        ListHeaderComponent={<Text h4>Product Orders</Text>}
+        ListHeaderComponent={<Text h4>{texts.orderEditor.productOrders[language]}</Text>}
         data={productOrders}
         style={styles.orderContainer}
         renderItem={({item:po})=>{
@@ -349,17 +353,17 @@ const SingleOrderEditor = () => {
       >
         <SpeedDial.Action
           icon={{ name: 'file-pdf', color: '#fff', type: 'font-awesome-5' }}
-          title="Generate PDF"
+          title={texts.orderEditor.generatePDF[language]}
           onPress={onCreatePDF}
         />
         <SpeedDial.Action
           icon={{ name: 'add', color: '#fff' }}
-          title="Add product order"
+          title={texts.orderEditor.addProductOrder[language]}
           onPress={onAddProductOrder}
         />
         <SpeedDial.Action
           icon={{ name: 'check', color: '#fff' }}
-          title="save"
+          title={texts.orderEditor.save[language]}
           onPress={saveOrder}
         />
       </SpeedDial>
@@ -374,11 +378,11 @@ const SingleOrderEditor = () => {
         }}
       >
         <View style={styles.modalContent}>
-          <Dialog.Title title={currentProductOrder?.id === null ? "Add Product Order" : "Edit Product Order"}/>
+          <Dialog.Title title={texts.orderEditor.addProductOrder[language]}/>
 
           <View style={styles.row}>
             <View>
-              <Text >Product</Text>
+              <Text>{texts.orderEditor.product[language]}</Text>
               <Dropdown
                 rows={products.map((product) => ({ value: product.id.toString(), label: product.name }))}
                 onChange={(value) => setCurrentProductOrder({ ...currentProductOrder, id_product: parseInt(value) })}
@@ -394,7 +398,7 @@ const SingleOrderEditor = () => {
           <Divider style={styles.divider} />
 
           <Input
-            label="Amount"
+            label={texts.orderEditor.amount[language]}
             value={currentProductOrder?.amount?.toString() || ""}  
             onChangeText={(text) => setCurrentProductOrder({ ...currentProductOrder, amount: formattedAmount(text) })}
             keyboardType='numeric'
@@ -408,8 +412,8 @@ const SingleOrderEditor = () => {
           </View>
 
           <Dialog.Actions>
-            <Dialog.Button type='solid' title="Save" onPress={saveCurrentProductOrder} />
-            <Dialog.Button type='outline' title="Cancel" onPress={() => setCurrentProductOrder(null)} />
+            <Dialog.Button type='solid' title={texts.save[language]} onPress={saveCurrentProductOrder} />
+            <Dialog.Button type='outline' title={texts.cancel[language]} onPress={() => setCurrentProductOrder(null)} />
           </Dialog.Actions>
         </View>
       </Dialog>

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import useDatabase from "../hooks/useDatabase";
 import { Text, useTheme, Button, ListItem, makeStyles } from "@rneui/themed";
@@ -9,6 +9,8 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from "../../App";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { FlatList } from "react-native-gesture-handler";
+import { languageContext } from "../contexts/languageContext";
+import { texts } from "../constants";
 
 const useStyles = makeStyles((theme)=>({
   container: {
@@ -33,6 +35,7 @@ const useStyles = makeStyles((theme)=>({
 export default function Main() {
   const { manageOrder, getOrders } = useDatabase();
   const [orders, setOrders] = useState<Order[]>([]);
+  const {language}= useContext(languageContext);
 
   type OrderEditorProps = StackNavigationProp<RootStackParamList, 'OrderEditor'>;
   const navigation = useNavigation<OrderEditorProps>();
@@ -65,7 +68,7 @@ export default function Main() {
 
   return (
     <View style={styles.container}>
-      <Text h1>Orders</Text>
+      <Text h1>{texts.main.orders[language]}</Text>
 
       <FlatList
         contentContainerStyle={styles.listContainer}
@@ -76,11 +79,11 @@ export default function Main() {
           <ListItem.Swipeable
             key={item.id}
             containerStyle={styles.listItem}
-            leftWidth={ScreenWidth / 5}
-            rightWidth={ScreenWidth / 5}
+            leftWidth={ScreenWidth / 4}
+            rightWidth={ScreenWidth / 4}
             leftContent={(reset) => (
               <Button
-                title="Delete"
+                title={texts.delete[language]}  
                 onPress={() => {
                   handleDeleteOrder(item);
                   reset(); // Close the swipeable list item after deletion
@@ -91,7 +94,7 @@ export default function Main() {
             )}
             rightContent={(reset) => (
               <Button
-                title="Edit"
+                title={texts.edit[language]}
                 onPress={() => {
                   editOrder(item);
                   reset(); // Close the swipeable list item after pressing the edit button

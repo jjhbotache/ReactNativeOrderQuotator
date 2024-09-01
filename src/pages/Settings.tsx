@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { ScrollView, View } from "react-native";
 import { Text, useTheme, ListItem, Input, makeStyles } from "@rneui/themed";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Settings as SettingsInterface } from "../helpers/createPDF"; // Import the new interface
 import { useFocusEffect } from '@react-navigation/native';
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { languageContext } from "../contexts/languageContext";
+import Dropdown from "../components/global/Dropdown";
+import { texts } from "../constants";
 
 export const getSettingsFromStorage = async ()=> {
   try {
@@ -43,6 +46,7 @@ const getListOfSettings = ()=>{
 export default function Settings() {
   const [settings, setSettings] = useState(getListOfSettings());
   const styles = useStyles();
+  const {language, setLanguage} = useContext(languageContext);
 
   useFocusEffect(
     useCallback(() => {
@@ -81,24 +85,37 @@ export default function Settings() {
 
   return (
     <View style={styles.container}>
-      <Text h1>Settings</Text>
-
+      <Text h1 >{texts.settings.settings[language]}</Text>
+      <View style={styles.row}>
+        <Text h2>{texts.settings.language[language]}</Text>
+        <Dropdown
+            rows={[
+              {label: "English", value: "en"},
+              {label: "Español", value: "es"},
+            ]}
+            onChange={(value) => setLanguage(value as "en" | "es")}
+            defaultValue={language}
+        />
+      </View>
       <ScrollView style={styles.settingsContainerView}>
         <View style={styles.listContainer}>
-          {Object.keys(settings).filter(setting => !excludedSettings.includes(setting)).map((key) => (
+          {Object.keys(settings).filter(setting => !excludedSettings.includes(setting)).map((key) => {
+            const settingLabel = texts.settings[key][language];
+            const settingPlaceholder = texts.settings.placeHolders[key][language];
+            return(
             <ListItem key={key} bottomDivider style= {{padding: 0}} containerStyle = {{padding: 1}}>
               <View style={styles.row}>
                 <ListItem.Content >
-                  <ListItem.Title>{key}</ListItem.Title>
+                  <ListItem.Title>{settingLabel}</ListItem.Title>
                   <Input
-                    placeholder="Value"
+                    placeholder={settingPlaceholder}
                     value={settings[key as keyof SettingsInterface]}
                     onChangeText={(text) => handleUpdateSetting(key as keyof SettingsInterface, text)}
                   />
                 </ListItem.Content>
               </View>
             </ListItem>
-          ))}
+          )})}
         </View>
       </ScrollView>
     </View>
@@ -112,6 +129,7 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center",
     justifyContent: "space-evenly",
     backgroundColor: theme.colors.background,
+    gap: 20, // Separate children components vertically by 5 units
   },
   settingsContainerView: {
     width: "100%",

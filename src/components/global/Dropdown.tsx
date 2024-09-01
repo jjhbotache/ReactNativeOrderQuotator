@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { FlatList } from 'react-native';
-import { Text, ListItem, Dialog, CheckBox, Button } from '@rneui/themed';
+import React, { useState, useEffect, useContext } from 'react';
+import { FlatList, Text } from 'react-native';
+import { Dialog, CheckBox, Button } from '@rneui/themed';
+import { texts } from '../../constants';
+import { languageContext } from '../../contexts/languageContext';
 
 interface row {
   value: string;
@@ -10,14 +12,28 @@ interface row {
 interface SelectDropdownProps {
   rows: row[];
   onChange: (value: string) => void;
+  defaultValue?: string;
 }
-export default function Dropdown ({ rows, onChange }:SelectDropdownProps) {
+
+export default function Dropdown ({ rows, onChange, defaultValue }: SelectDropdownProps) {
   const [visible, setVisible] = useState(false);
-  const [selectedValue, setSelectedValue] = useState('Select an option');
+  const {language}= useContext(languageContext);
+  const [selectedValue, setSelectedValue] = useState(defaultValue || texts.selectAnOption[language]);
+  
+
+  useEffect(() => {
+    if (defaultValue) {
+      const defaultLabel = rows.find(row => row.value === defaultValue)?.label;
+      if (defaultLabel) {
+        setSelectedValue(defaultLabel);
+      }
+    }
+  }, [defaultValue, rows]);
 
   const toggleOverlay = () => {
     setVisible(!visible);
   };
+
   const labels = rows.map((row) => row.label);
   const values = rows.map((row) => row.value);
 
@@ -30,10 +46,10 @@ export default function Dropdown ({ rows, onChange }:SelectDropdownProps) {
 
   return (
     <>
-      <Button onPress={toggleOverlay}>{selectedValue}</Button>
+      <Button onPress={toggleOverlay} title={selectedValue}></Button>
 
       <Dialog isVisible={visible} onBackdropPress={toggleOverlay}>
-        <Dialog.Title title='Select an option' />
+        <Dialog.Title title={texts.selectAnOption[language]} />
         <FlatList
           data={labels}
           renderItem={({ item, index }) => (

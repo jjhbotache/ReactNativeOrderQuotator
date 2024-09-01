@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import { Icon, ThemeProvider, useTheme } from '@rneui/themed';
 import Constants from "expo-constants";
@@ -12,6 +12,8 @@ import Products from './src/pages/Products';
 import SingleOrderEditor from './src/pages/OrderEditor';
 import theme from './src/theme';
 import Settings from './src/pages/Settings';
+import { languageContext } from './src/contexts/languageContext';
+import { texts } from './src/constants';
 
 const styles = StyleSheet.create({
   main: {
@@ -34,12 +36,13 @@ export type RootStackParamList = {
   OrderEditor: { orderId: number | null };
 };
 
+
 const StackNavigator = createStackNavigator<RootStackParamList>();
 const BottomTabsNavigator = createBottomTabNavigator(); 
 
 function MainTabs () {
   const {theme} = useTheme();
-  
+  const {language}= useContext(languageContext);
   return (
     <BottomTabsNavigator.Navigator
       initialRouteName='Main'
@@ -54,6 +57,7 @@ function MainTabs () {
           tabBarIcon: () => <Icon name="house" color='white' />,
           tabBarLabelStyle: styles.tabBarLabelStyle,
           tabBarActiveTintColor: theme.colors.tertiary,
+          tabBarLabel: texts.tabs.main[language],
         }} 
       />
 
@@ -65,6 +69,7 @@ function MainTabs () {
           tabBarIcon: () => <Icon name="cube" type='font-awesome' color='white' />,
           tabBarLabelStyle: styles.tabBarLabelStyle,
           tabBarActiveTintColor: theme.colors.tertiary,
+          tabBarLabel: texts.tabs.products[language],
         }} 
       />
 
@@ -76,6 +81,7 @@ function MainTabs () {
           tabBarIcon: () => <Icon name="tools" type='font-awesome-5' color='white' />,
           tabBarLabelStyle: styles.tabBarLabelStyle,
           tabBarActiveTintColor: theme.colors.tertiary,
+          tabBarLabel: texts.tabs.settings[language],
         }} 
       />
     </BottomTabsNavigator.Navigator>
@@ -84,9 +90,11 @@ function MainTabs () {
 
 export default function App() {
   const { clearDatabase } = useDatabase();
+  const [language, setLanguage] = useState<"es" | "en">("es");
   // clearDatabase();
 
   return (
+    <languageContext.Provider value={{language, setLanguage}}>
     <ThemeProvider theme={theme}>
       <NavigationContainer>
         <SafeAreaView style={styles.main}>
@@ -105,6 +113,7 @@ export default function App() {
         </SafeAreaView>
       </NavigationContainer>
     </ThemeProvider>
+    </languageContext.Provider>
   );
 }
 

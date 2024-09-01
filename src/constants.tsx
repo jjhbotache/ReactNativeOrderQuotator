@@ -52,7 +52,42 @@ export const texts = {
     es: "Seleccione una opción"
   },
   
-
+  pdf:{
+    chargeBill:{
+      en: "Charge Bill",
+      es: "Cuenta de cobro"
+    },
+    owesTo:{
+      en: "OWES TO: ",
+      es: "DEBE A: "
+    },
+    theAmountOf:{
+      en: "THE AMOUNT OF: ",
+      es: "LA SUMA DE M/CTE: "
+    },
+    forConceptOf:{
+      en: "FOR CONCEPT OF: ",
+      es: "POR CONCEPTO DE: "
+    },
+    table:{
+      description:{
+        en: "Description",
+        es: "Descripción"
+      },
+      quantity:{
+        en: "Quantity",
+        es: "Cantidad"
+      },
+      value:{
+        en: "Value",
+        es: "Valor"
+      }
+    },
+    kindly:{
+      en: "Kindly:",
+      es: "Coordialmente:"
+    }
+  },
 
   main:{
     orders:{

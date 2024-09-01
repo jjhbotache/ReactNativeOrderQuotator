@@ -258,7 +258,8 @@ const SingleOrderEditor = () => {
     await createPDF(
       order,
       products,
-      settings
+      settings,
+      language
     )
     setSpeedDialOpen(false);
   };

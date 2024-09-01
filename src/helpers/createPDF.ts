@@ -3,6 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import { shareAsync } from 'expo-sharing';
 import { Order, Product, ProductOrder } from '../interfaces/databaseInterfaces';
 import { toCurrency } from './stringHelpers';
+import { texts } from '../constants';
 
 export class Settings {
   customerName: string="";
@@ -15,7 +16,7 @@ export class Settings {
   date: string="";
 }
 
-export default async function createPDF(order: Order, products: Product[], settings: Settings) {
+export default async function createPDF(order: Order, products: Product[], settings: Settings, language:"es"| "en") {
   const currentDate = settings.date || new Date().toLocaleDateString();
   const totalAmount = order.productOrders.reduce((total, po: ProductOrder) => {
     const product = products.find(p => p.id === po.id_product);
@@ -111,26 +112,26 @@ export default async function createPDF(order: Order, products: Product[], setti
         <span>${settings.city} ${settings.date}</span>
       </div>
       <div class="text-center mt-16">
-        <h1 class="text-xl font-bold">CUENTA DE COBRO</h1>
+        <h1 class="text-xl font-bold">${texts.pdf.chargeBill[language]}</h1>
         <h2 class="text-blue mt-4">${settings.customerName}</h2>
         <p class="text-blue">NIT: ${settings.customerNit}</p>
       </div>
       <div class="text-center mt-16">
-        <p>DEBE A:</p>
+        <p>${texts.pdf.owesTo}</p>
         <p class="mt-4">${settings.billedBy}</p>
         <p class="text-blue mt-4">C.C. ${settings.billerId}</p>
       </div>
       <div class="text-center mt-16">
-        <p class="mt-4">LA SUMA DE M/CTE <span class="text-blue">(${toCurrency(totalAmount)})</span></p>
+        <p class="mt-4">${texts.pdf.theAmountOf[language]} <span class="text-blue">(${toCurrency(totalAmount)})</span></p>
       </div>
       <div class="text-center mt-16">
-        <h4 class="mt-4">POR CONCEPTO DE:</h4>
+        <h4 class="mt-4">${texts.pdf.forConceptOf[language]}</h4>
         <table class="table mt-4">
           <thead>
             <tr>
-              <th>Descripción</th>
-              <th>Cantidad</th>
-              <th>Valor</th>
+              <th>${texts.pdf.table.description}</th>
+              <th>${texts.pdf.table.quantity}</th>
+              <th>${texts.pdf.table.value}</th>
             </tr>
           </thead>
           <tbody>
@@ -139,7 +140,7 @@ export default async function createPDF(order: Order, products: Product[], setti
         </table>
       </div>
       <div class="mt-16">
-        <p>Cordialmente:</p>
+        <p>${texts.pdf.kindly[language]}</p>
         <p>${settings.billedBy}</p>
         <p>C.C: ${settings.billerId}</p>
         <p class="text-blue">Tel: ${settings.billerPhone}</p>
